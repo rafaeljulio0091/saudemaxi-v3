@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Saúde Maxi</title>
+  <link rel="stylesheet" href="./css/app.css">
+</head>
+<body>
+
+  <!-- Barra de demonstração. Não pertence ao produto. -->
+  <div id="barra-demo" class="barra-demo">
+    <span class="marca-demo">Esboço funcional</span>
+
+    <label class="campo-demo">
+      <span>Perfil</span>
+      <select id="sel-perfil">
+        <option value="paciente">Paciente</option>
+        <option value="gestor">Gestor da clínica</option>
+      </select>
+    </label>
+
+    <label class="campo-demo">
+      <span>Cliente</span>
+      <select id="sel-cliente">
+        <option value="queimados">Prefeitura de Queimados</option>
+        <option value="cetid">Cetid</option>
+        <option value="metalurgica">Metalúrgica Bandeirantes</option>
+      </select>
+    </label>
+
+    <label class="campo-demo">
+      <span>Plano</span>
+      <select id="sel-plano"></select>
+    </label>
+
+    <label class="campo-demo">
+      <span>Rede</span>
+      <select id="sel-rede">
+        <option value="ok">Normal</option>
+        <option value="lenta">Lenta</option>
+        <option value="erro">Com falha</option>
+        <option value="vazio">Sem dados</option>
+      </select>
+    </label>
+
+    <button id="btn-reset" class="btn-demo" type="button">Zerar dados</button>
+    <button id="btn-fechar-demo" class="btn-demo" type="button" aria-label="Recolher barra">Recolher</button>
+  </div>
+  <button id="btn-abrir-demo" class="reabrir-demo" type="button" hidden>Abrir controles de demonstração</button>
+
+  <!-- Aplicação -->
+  <div id="raiz" class="raiz"></div>
+
+  <!-- Camadas de sobreposição -->
+  <div id="modal-fundo" class="modal-fundo" hidden>
+    <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo"></div>
+  </div>
+  <div id="avisos" class="avisos" role="status" aria-live="polite"></div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

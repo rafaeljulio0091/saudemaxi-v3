@@ -1,0 +1,118 @@
+.sm-stack {
+    display: grid;
+    gap: var(--e5);
+}
+.sm-stack-sm {
+    display: grid;
+    gap: var(--e3);
+}
+.sm-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e3);
+    align-items: center;
+}
+.sm-grid {
+    display: grid;
+    gap: var(--e5);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.sm-grid-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.sm-grow {
+    flex: 1;
+    min-width: 0;
+}
+.sm-mt {
+    margin-top: var(--e4);
+}
+.sm-mb {
+    margin-bottom: var(--e5);
+}
+.sm-link {
+    color: var(--marca-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+.sm-kicker {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 750;
+}
+.sm-break {
+    overflow-wrap: anywhere;
+}
+@media (max-width: 1080px) {
+    .sm-grid-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@media (max-width: 780px) {
+    .sm-sidebar {
+        display: none;
+    }
+    .sm-mobile-menu {
+        display: inline-flex;
+    }
+    .sm-content {
+        padding: var(--e4);
+        padding-bottom: 110px;
+    }
+    .sm-topbar {
+        padding: var(--e3) var(--e4);
+    }
+    .sm-topbar .sm-badge {
+        display: none;
+    }
+    .sm-auth {
+        grid-template-columns: 1fr;
+    }
+    .sm-auth-art {
+        padding: var(--e6);
+    }
+    .sm-auth-art h1 {
+        font-size: 26px;
+    }
+    .sm-auth-form {
+        padding: var(--e5);
+    }
+    .sm-demo-banner {
+        padding: 8px var(--e4);
+    }
+}
+@media (max-width: 620px) {
+    .sm-grid,
+    .sm-grid-4 {
+        grid-template-columns: 1fr;
+    }
+    .sm-hero {
+        padding: var(--e5);
+    }
+    .sm-card {
+        padding: var(--e4);
+    }
+    .sm-service {
+        padding: var(--e4);
+        gap: var(--e3);
+    }
+    .sm-service strong {
+        font-size: 16px;
+    }
+    .sm-pagination {
+        flex-wrap: wrap;
+    }
+    .sm-dialog-body {
+        padding: var(--e4);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sm-app *,
+    .sm-app *::before,
+    .sm-app *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

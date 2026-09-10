@@ -1,0 +1,50 @@
+.sm-app {
+    --marca: #5e5212;
+    --marca-hover: color-mix(in srgb, var(--marca) 82%, #04121a);
+    --marca-2: color-mix(in srgb, var(--marca) 62%, #22e0b0);
+    --marca-text: color-mix(in srgb, var(--marca) 30%, #12233f);
+    --marca-escura: color-mix(in srgb, var(--marca) 82%, #04121a);
+    --marca-noite: color-mix(in srgb, var(--marca) 16%, #0a1030);
+    --marca-suave: color-mix(in srgb, var(--marca) 8%, #fff);
+    --marca-linha: color-mix(in srgb, var(--marca) 12%, #e7eef0);
+    --marca-grad: linear-gradient(135deg, var(--marca), var(--marca-2));
+    --tinta: #12233f;
+    --tinta-2: #52657a;
+    --linha: #e7eef0;
+    --fundo: #f4f7fb;
+    --ok: #16713f;
+    --ok-fraco: #e8f6ee;
+    --aviso: #805515;
+    --aviso-fraco: #fdf6e3;
+    --erro: #ad3024;
+    --erro-fraco: #fcedeb;
+    --info: #245786;
+    --info-fraco: #edf5fc;
+    --r-sm: 10px;
+    --r-md: 14px;
+    --r-lg: 20px;
+    --r-xl: 32px;
+    --e1: 4px;
+    --e2: 8px;
+    --e3: 12px;
+    --e4: 16px;
+    --e5: 24px;
+    --e6: 32px;
+    --e7: 48px;
+    --elev-1: 0 2px 8px #12233f08;
+    --elev-2: 0 12px 28px #12233f14;
+    --alvo: 44px;
+    --transicao: 180ms ease;
+    --lateral: 264px;
+    --z-top: 20;
+    --z-drawer: 70;
+    --z-assistant: 95;
+    --z-modal: 110;
+    color: var(--tinta);
+    background: var(--fundo);
+    font:
+        15px/1.6 ui-sans-serif,
+        system-ui,
+        sans-serif;
+    color-scheme: light;
+}
