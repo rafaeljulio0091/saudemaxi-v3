@@ -1,30 +1,38 @@
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import GuestLayout from '@/Layouts/HealthcareGuestLayout.vue';
+import AppButton from '@/Components/Healthcare/AppButton.vue';
+
+defineProps({ demoAvailable: Boolean });
+const page = usePage();
 </script>
 
 <template>
-    <Head title="Dashboard" />
-
-    <AuthenticatedLayout>
-        <template #header>
-            <h2
-                class="text-xl font-semibold leading-tight text-gray-800"
+    <GuestLayout>
+        <Head title="Minha conta" />
+        <div class="sm-stack">
+            <p class="sm-kicker sm-muted">Saúde Maxi</p>
+            <h1>Olá, {{ page.props.auth.user.name.split(' ')[0] }}.</h1>
+            <p class="sm-muted">
+                Sua conta está ativa. Os serviços de saúde são disponibilizados
+                conforme o contrato da sua instituição. Assim que seu vínculo
+                for configurado, seus cuidados aparecerão aqui.
+            </p>
+            <AppButton v-if="demoAvailable" href="/demonstracao">
+                Conhecer a demonstração
+            </AppButton>
+            <AppButton :href="route('profile.edit')" variant="secondary">
+                Meu perfil
+            </AppButton>
+            <Link
+                :href="route('logout')"
+                method="post"
+                as="button"
+                class="sm-button secondary"
             >
-                Dashboard
-            </h2>
-        </template>
-
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <div
-                    class="overflow-hidden bg-white shadow-sm sm:rounded-lg"
-                >
-                    <div class="p-6 text-gray-900">
-                        You're logged in!
-                    </div>
-                </div>
-            </div>
+                Sair
+            </Link>
+            <a class="sm-link" href="tel:192">Emergência: ligar 192, SAMU</a>
         </div>
-    </AuthenticatedLayout>
+    </GuestLayout>
 </template>
