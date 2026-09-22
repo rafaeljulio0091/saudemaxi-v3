@@ -11,8 +11,9 @@ import { useHealthcareServices } from '@/composables/useHealthcareServices';
 import { useAsyncState } from '@/composables/useAsyncState';
 defineOptions({ layout: Layout });
 
+const props = defineProps({ returned: Object });
 const { appointment } = useHealthcareServices();
-const { href } = useHealthcare();
+const { context, href } = useHealthcare();
 const busy = ref(false),
     result = ref(null),
     error = ref('');
@@ -22,6 +23,10 @@ async function open() {
     error.value = '';
     try {
         result.value = await appointment.emergency();
+        if (result.value.magic_link) {
+            window.location.href = result.value.magic_link;
+            return;
+        }
     } catch (e) {
         error.value = e.userMessage;
     } finally {
@@ -35,6 +40,13 @@ async function open() {
         description="Um atendente recebe você e direciona para o profissional."
     />
     <div class="sm-stack">
+        <AppAlert v-if="returned" tone="success">
+            Atendimento encerrado.
+            <template v-if="returned.consultationCode">
+                Código {{ returned.consultationCode }}.
+            </template>
+            Confira a situação em Minhas consultas.
+        </AppAlert>
         <AppCard>
             <h2>Atendimento por vídeo</h2>
             <p class="sm-muted">
@@ -42,7 +54,11 @@ async function open() {
                 horas por dia.
             </p>
             <AppButton v-if="!result" class="sm-mt" :busy="busy" @click="open">
-                Demonstrar encaminhamento
+                {{
+                    context.demo
+                        ? 'Demonstrar encaminhamento'
+                        : 'Falar com um médico agora'
+                }}
             </AppButton>
             <AppAlert v-if="result" class="sm-mt">
                 {{ result.message }}

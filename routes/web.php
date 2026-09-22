@@ -29,4 +29,10 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
+// Registered before the unrestricted healthcare.php routes below so a
+// request to a real tenant subdomain is matched here first; a request on
+// any other host falls through to the honest "NotReady" fallback.
+Route::domain('{tenant}.'.config('healthcare.tenant_base_domain'))
+    ->group(fn () => require __DIR__.'/tenant.php');
+
 require __DIR__.'/healthcare.php';

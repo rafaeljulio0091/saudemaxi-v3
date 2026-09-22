@@ -40,14 +40,14 @@ watch(
                     </div>
                 </div>
                 <AppNavigation />
-                <div class="sm-brand">
+                <div v-if="context.demo" class="sm-brand">
                     <Link href="/demonstracao" class="sm-link">
                         Trocar cenário de demonstração
                     </Link>
                 </div>
             </aside>
             <div class="sm-main">
-                <div class="sm-demo-banner">
+                <div v-if="context.demo" class="sm-demo-banner">
                     <span>
                         Demonstração · Dados fictícios · Nenhuma operação real
                     </span>
@@ -84,6 +84,7 @@ watch(
             </div>
         </div>
         <AppButton
+            v-if="context.demo"
             class="sm-max-launch"
             :aria-expanded="ui.maxOpen"
             @click="ui.maxOpen = true"
@@ -94,6 +95,7 @@ watch(
             <AppNavigation @navigate="ui.menuOpen = false" />
         </AppModal>
         <AppModal
+            v-if="context.demo"
             :open="ui.maxOpen"
             title="MAX, seu assistente"
             @close="ui.maxOpen = false"

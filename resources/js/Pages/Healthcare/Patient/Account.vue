@@ -88,11 +88,19 @@ onMounted(state.run);
                         Nascimento: {{ date(state.data.value.nascimento) }}
                     </p>
                     <AppAlert v-if="saved" tone="success">
-                        Dados atualizados na demonstração.
+                        {{
+                            context.demo
+                                ? 'Dados atualizados na demonstração.'
+                                : 'Dados atualizados.'
+                        }}
                     </AppAlert>
                     <AppAlert v-if="error" tone="danger">{{ error }}</AppAlert>
                     <AppButton type="submit" :busy="busy">
-                        Salvar dados demonstrativos
+                        {{
+                            context.demo
+                                ? 'Salvar dados demonstrativos'
+                                : 'Salvar dados'
+                        }}
                     </AppButton>
                 </form>
             </AppCard>

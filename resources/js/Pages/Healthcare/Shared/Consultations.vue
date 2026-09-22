@@ -196,7 +196,11 @@ onMounted(state.run);
             <p>{{ date(selected.agendadaPara) }} · {{ selected.codigo }}</p>
             <p v-if="selected.duracao">Duração: {{ selected.duracao }}</p>
             <AppAlert>
-                O histórico demonstrativo não confirma um atendimento real.
+                {{
+                    context.demo
+                        ? 'O histórico demonstrativo não confirma um atendimento real.'
+                        : 'Situação informada pela plataforma de atendimento.'
+                }}
                 Cancelamento e documentos dependem da plataforma de atendimento.
             </AppAlert>
             <template v-if="context.profile === 'manager'">
