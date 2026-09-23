@@ -22,8 +22,8 @@ function submit() {
             <form class="sm-stack-sm" @submit.prevent="submit">
                 <AppField
                     id="email"
-                    label="E-mail"
-                    type="email"
+                    label="E-mail ou CPF"
+                    type="text"
                     autocomplete="username"
                     v-model="form.email"
                     :error="form.errors.email"

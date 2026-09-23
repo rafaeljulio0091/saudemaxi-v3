@@ -24,6 +24,20 @@ class TelemedicineClient
         ]);
     }
 
+    /**
+     * Confirms whether a CPF belongs to a registered LSX patient.
+     *
+     * Confirmed against homologacao on 23/09/2026: this endpoint takes only
+     * {cpf} and does not validate any password, returning a magic_link that
+     * authenticates on the provider's own platform. It must never be treated
+     * as a SaudeMaxi credential check: a valid response only proves the CPF
+     * is known to the provider, not that the caller is that patient.
+     */
+    public function loginPatient(string $cpf): array
+    {
+        return $this->post('login-patient/', ['cpf' => $cpf]);
+    }
+
     public function consultationHistory(): array
     {
         return $this->get('consultation-history/');
@@ -91,7 +105,7 @@ class TelemedicineClient
         if ($response->status() === 404) {
             throw TelemedicineException::notFound();
         }
-        if ($response->status() === 422) {
+        if ($response->status() === 400 || $response->status() === 422) {
             throw TelemedicineException::rejected($this->safeMessage($response));
         }
         if ($response->serverError()) {
