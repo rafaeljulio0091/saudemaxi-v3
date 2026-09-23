@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Services\Telemedicine\LsxMedicalAuthenticator;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -42,7 +43,11 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $authenticated = config('lsxmedical.login_enabled')
+            ? app(LsxMedicalAuthenticator::class)->attempt($this->only('email', 'password'), $this->boolean('remember'))
+            : Auth::attempt($this->only('email', 'password'), $this->boolean('remember'));
+
+        if (! $authenticated) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
