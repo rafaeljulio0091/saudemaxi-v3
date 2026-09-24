@@ -2,7 +2,8 @@
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import AppCard from '@/Components/Healthcare/AppCard.vue';
 import ServiceCard from '@/Components/Healthcare/ServiceCard.vue';
-import { modules, patientMenu } from '@/constants/healthcareNavigation';
+import { modules } from '@/constants/healthcareNavigation';
+import { navItemsForRole } from '@/utils/dashboardNavigation';
 import { greeting } from '@/utils/healthcareFormat';
 import { usePage } from '@inertiajs/vue3';
 
@@ -18,11 +19,7 @@ defineProps({
 });
 
 const page = usePage();
-
-// "Início" points at the fixture-driven demo page; the real landing page is /dashboard.
-const navItems = patientMenu.map((item) =>
-    item.path === '/inicio' ? { ...item, path: '/dashboard' } : item,
-);
+const navItems = navItemsForRole('patient');
 </script>
 
 <template>

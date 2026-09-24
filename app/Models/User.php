@@ -26,6 +26,8 @@ class User extends Authenticatable
         'password',
         'role',
         'tenant_id',
+        'phone',
+        'birthdate',
     ];
 
     /**
@@ -49,6 +51,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'birthdate' => 'date:Y-m-d',
         ];
     }
 

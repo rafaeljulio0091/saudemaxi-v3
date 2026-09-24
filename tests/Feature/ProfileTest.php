@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -19,6 +21,24 @@ class ProfileTest extends TestCase
             ->get('/profile');
 
         $response->assertOk();
+    }
+
+    public function test_profile_page_shows_the_authenticated_users_real_data(): void
+    {
+        $tenant = Tenant::factory()->create(['name' => 'Prefeitura de Queimados']);
+        $user = User::factory()->create([
+            'name' => 'Antônio Ribeiro da Silva',
+            'tenant_id' => $tenant->id,
+        ]);
+
+        $response = $this->actingAs($user)->get('/profile');
+
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Profile/Edit')
+            ->where('roleLabel', 'Paciente')
+            ->where('tenant.name', 'Prefeitura de Queimados')
+        );
     }
 
     public function test_profile_information_can_be_updated(): void
@@ -41,6 +61,50 @@ class ProfileTest extends TestCase
         $this->assertSame('Test User', $user->name);
         $this->assertSame('test@example.com', $user->email);
         $this->assertNull($user->email_verified_at);
+    }
+
+    public function test_phone_and_birthdate_can_be_updated(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => '(11) 90000-0001',
+                'birthdate' => '1958-04-12',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $user->refresh();
+
+        $this->assertSame('(11) 90000-0001', $user->phone);
+        $this->assertSame('1958-04-12', $user->birthdate->toDateString());
+    }
+
+    public function test_phone_and_birthdate_are_optional(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => null,
+                'birthdate' => null,
+            ]);
+
+        $response->assertSessionHasNoErrors();
+
+        $user->refresh();
+
+        $this->assertNull($user->phone);
+        $this->assertNull($user->birthdate);
     }
 
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void

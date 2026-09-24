@@ -1,4 +1,6 @@
 <script setup>
+import { ref } from 'vue';
+
 defineOptions({ inheritAttrs: false });
 defineProps({
     id: { type: String, required: true },
@@ -9,6 +11,9 @@ defineProps({
     modelValue: [String, Number],
 });
 defineEmits(['update:modelValue']);
+
+const input = ref(null);
+defineExpose({ focus: () => input.value?.focus() });
 </script>
 <template>
     <div class="sm-field">
@@ -16,6 +21,7 @@ defineEmits(['update:modelValue']);
         <input
             v-bind="$attrs"
             :id="id"
+            ref="input"
             :type="type"
             :value="modelValue"
             :required="required"

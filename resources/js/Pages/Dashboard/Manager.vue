@@ -3,6 +3,7 @@ import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import AppCard from '@/Components/Healthcare/AppCard.vue';
 import ServiceCard from '@/Components/Healthcare/ServiceCard.vue';
 import { managerMenu } from '@/constants/healthcareNavigation';
+import { navItemsForRole } from '@/utils/dashboardNavigation';
 import { greeting } from '@/utils/healthcareFormat';
 import { usePage } from '@inertiajs/vue3';
 
@@ -18,6 +19,7 @@ defineProps({
 });
 
 const page = usePage();
+const navItems = navItemsForRole('manager');
 
 // The panel itself is the current page, so it is not listed as a service link.
 const services = managerMenu.filter((item) => item.path !== '/gestor/painel');
@@ -26,7 +28,7 @@ const services = managerMenu.filter((item) => item.path !== '/gestor/painel');
 <template>
     <DashboardLayout
         title="Painel"
-        :nav-items="managerMenu"
+        :nav-items="navItems"
         :role-label="roleLabel"
         :tenant="tenant"
     >
