@@ -26,6 +26,8 @@ return [
 
     'create_patient_endpoint' => env('LSXMEDICAL_CREATE_PATIENT_ENDPOINT', '/api/clinic/create-patient/'),
 
+    'consultation_history_endpoint' => env('LSXMEDICAL_CONSULTATION_HISTORY_ENDPOINT', '/api/clinic/consultation-history/'),
+
     'timeout' => (int) env('LSXMEDICAL_TIMEOUT', 10),
 
 ];

@@ -2,11 +2,8 @@
 
 namespace App\Services\Telemedicine;
 
-use Illuminate\Http\Client\ConnectionException;
+use App\Services\Telemedicine\Concerns\MakesTelemedicineRequests;
 use Illuminate\Http\Client\PendingRequest;
-use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 /**
  * Client for the patient endpoints of the lsxmedical telemedicine provider
@@ -19,16 +16,38 @@ use Illuminate\Support\Facades\Log;
  */
 class LsxMedicalPatientClient
 {
+    use MakesTelemedicineRequests;
+
     /**
-     * @param  array<string, mixed>  $query
-     * @return array<string, mixed>
+     * @param  array{search?: ?string, status?: ?string, holder?: ?string, page?: ?int}  $filters
+     * @return array{count: int, results: array<int, array<string, mixed>>}
      */
-    public function search(array $query): array
+    public function search(array $filters): array
     {
-        return $this->request(
+        // The "search", "status" and "is_dependent" query parameter names are a
+        // best-effort guess: the real contract of GET filter-patients/ could
+        // not be verified against a homologation token from this environment.
+        $query = array_filter([
+            'search' => $filters['search'] ?? null,
+            'status' => $filters['status'] ?? null,
+            'is_dependent' => match ($filters['holder'] ?? null) {
+                'titular' => false,
+                'dependente' => true,
+                default => null,
+            },
+            'page' => $filters['page'] ?? 1,
+            'page_size' => 10,
+        ], fn ($value) => $value !== null);
+
+        $result = $this->request(
             fn (PendingRequest $http) => $http->get(config('lsxmedical.filter_patients_endpoint'), $query),
             'filter-patients',
         );
+
+        return [
+            'count' => $result['count'] ?? 0,
+            'results' => $result['results'] ?? [],
+        ];
     }
 
     /**
@@ -40,78 +59,6 @@ class LsxMedicalPatientClient
         return $this->request(
             fn (PendingRequest $http) => $http->post(config('lsxmedical.create_patient_endpoint'), $payload),
             'create-patient',
-        );
-    }
-
-    /**
-     * @param  callable(PendingRequest): Response  $call
-     * @return array<string, mixed>
-     */
-    private function request(callable $call, string $operation): array
-    {
-        $http = Http::baseUrl(config('lsxmedical.base_url'))
-            ->withToken(config('lsxmedical.service_token'))
-            ->acceptJson()
-            ->timeout(config('lsxmedical.timeout'));
-
-        try {
-            $response = $call($http);
-        } catch (ConnectionException $e) {
-            Log::error("lsxmedical.{$operation}.connection_error", [
-                'message' => $e->getMessage(),
-            ]);
-
-            throw new TelemedicineApiException(
-                'Não foi possível contatar o provedor de telemedicina.',
-                'unavailable',
-            );
-        }
-
-        if ($response->successful()) {
-            return $response->json() ?? [];
-        }
-
-        if ($response->status() === 401 || $response->status() === 403) {
-            Log::error("lsxmedical.{$operation}.unauthorized", ['status' => $response->status()]);
-
-            throw new TelemedicineApiException(
-                'A integração com o provedor de telemedicina não está autorizada.',
-                'unauthorized',
-                $response->status(),
-            );
-        }
-
-        if ($response->status() === 404) {
-            throw new TelemedicineApiException(
-                'Recurso não encontrado no provedor de telemedicina.',
-                'not_found',
-                404,
-            );
-        }
-
-        if ($response->status() === 422) {
-            throw new TelemedicineApiException(
-                'O provedor de telemedicina rejeitou os dados informados.',
-                'invalid',
-                422,
-                (array) ($response->json('errors') ?? $response->json() ?? []),
-            );
-        }
-
-        if ($response->status() === 409) {
-            throw new TelemedicineApiException(
-                'O provedor de telemedicina rejeitou a operação.',
-                'business_rejection',
-                409,
-            );
-        }
-
-        Log::error("lsxmedical.{$operation}.request_failed", ['status' => $response->status()]);
-
-        throw new TelemedicineApiException(
-            'O provedor de telemedicina está indisponível no momento.',
-            'unavailable',
-            $response->status(),
         );
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Healthcare\ConsultationController;
 use App\Http\Controllers\Healthcare\DemoController;
 use App\Http\Controllers\Healthcare\PatientController;
 use App\Http\Middleware\EnsureHealthcareDemo;
@@ -30,7 +31,7 @@ $pages = [
 ];
 
 foreach ($pages as [$path, $page, $title, $profile, $module]) {
-    if (in_array($path, ['gestor/painel', 'gestor/pacientes'], true)) {
+    if (in_array($path, ['gestor/painel', 'gestor/pacientes', 'gestor/consultas'], true)) {
         // These pages are registered below with a real implementation.
         continue;
     }
@@ -46,6 +47,7 @@ Route::get('gestor/painel', [DashboardController::class, 'manager'])
 Route::middleware(['auth', 'verified', EnsureUserHasRole::class.':manager'])->group(function () {
     Route::get('gestor/pacientes', [PatientController::class, 'index'])->name('healthcare.manager.patients');
     Route::post('gestor/pacientes', [PatientController::class, 'store'])->name('healthcare.manager.patients.store');
+    Route::get('gestor/consultas', [ConsultationController::class, 'index'])->name('healthcare.manager.consultations');
 });
 
 Route::prefix('demonstracao')->middleware(EnsureHealthcareDemo::class)->group(function () use ($pages) {
