@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { initials as computeInitials } from '@/utils/healthcareFormat';
 
 const props = defineProps({
     name: {
@@ -18,15 +19,7 @@ const sizeClasses = {
     lg: 'h-14 w-14 text-lg',
 };
 
-const initials = computed(() =>
-    props.name
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((part) => part.charAt(0).toUpperCase())
-        .join(''),
-);
+const initials = computed(() => computeInitials(props.name));
 </script>
 
 <template>

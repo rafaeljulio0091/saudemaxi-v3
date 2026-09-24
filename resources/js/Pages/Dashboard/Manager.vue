@@ -1,6 +1,13 @@
 <script setup>
+import '@/../css/healthcare/tokens.css';
+import '@/../css/healthcare/components.css';
+import '@/../css/healthcare/utilities.css';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import UserAvatar from '@/Components/UserAvatar.vue';
+import AppCard from '@/Components/Healthcare/AppCard.vue';
+import ServiceCard from '@/Components/Healthcare/ServiceCard.vue';
+import { managerMenu } from '@/constants/healthcareNavigation';
+import { greeting } from '@/utils/healthcareFormat';
+import { brandTokens } from '@/utils/brandColor';
 import { Head, usePage } from '@inertiajs/vue3';
 
 defineProps({
@@ -15,6 +22,9 @@ defineProps({
 });
 
 const page = usePage();
+
+// The panel itself is the current page, so it is not listed as a service link.
+const services = managerMenu.filter((item) => item.path !== '/gestor/painel');
 </script>
 
 <template>
@@ -27,52 +37,47 @@ const page = usePage();
             </h2>
         </template>
 
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                    <div class="flex items-center gap-4 p-6">
-                        <UserAvatar
-                            :name="page.props.auth.user.name"
-                            size="lg"
-                        />
-                        <div>
-                            <p class="text-lg font-semibold text-gray-900">
-                                {{ page.props.auth.user.name }}
-                            </p>
-                            <p class="text-sm text-gray-500">
-                                {{ page.props.auth.user.email }}
-                            </p>
-                            <p class="text-sm text-gray-500">{{ roleLabel }}</p>
+        <div class="sm-app" :style="brandTokens(tenant?.brand_color)">
+            <div class="sm-content">
+                <div class="sm-stack">
+                    <section class="sm-hero sm-stack-sm">
+                        <p class="sm-kicker">Gestão do cuidado</p>
+                        <h1>
+                            {{ greeting() }},
+                            {{ page.props.auth.user.name.split(' ')[0] }}.
+                        </h1>
+                        <div class="sm-row">
+                            <span class="sm-badge">{{ roleLabel }}</span>
+                            <span v-if="tenant" class="sm-badge">
+                                {{ tenant.name }}
+                            </span>
                         </div>
-                    </div>
-                </div>
+                    </section>
 
-                <div
-                    v-if="tenant"
-                    class="overflow-hidden bg-white shadow-sm sm:rounded-lg"
-                >
-                    <div class="p-6">
-                        <p class="text-sm text-gray-500">Cliente atendido</p>
-                        <p class="text-base font-medium text-gray-900">
-                            {{ tenant.name }}
+                    <AppCard v-if="!tenant">
+                        <p class="sm-muted">
+                            Este usuário ainda não está associado a um cliente
+                            (tenant).
                         </p>
-                    </div>
-                </div>
-                <div
-                    v-else
-                    class="overflow-hidden bg-white shadow-sm sm:rounded-lg"
-                >
-                    <div class="p-6 text-gray-600">
-                        Este usuário ainda não está associado a um cliente
-                        (tenant).
-                    </div>
-                </div>
+                    </AppCard>
 
-                <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-600">
-                        As áreas de pacientes, consultas, planos, identidade
-                        visual e integrações ainda estão em preparação para este
-                        ambiente.
+                    <AppCard>
+                        <h2>Operação</h2>
+                        <p class="sm-muted sm-mt">
+                            Os indicadores de pacientes, consultas e pagamentos
+                            ainda não estão disponíveis neste ambiente.
+                        </p>
+                    </AppCard>
+
+                    <h2>Áreas de gestão</h2>
+                    <div class="sm-stack-sm">
+                        <ServiceCard
+                            v-for="item in services"
+                            :key="item.path"
+                            :title="item.label"
+                            :icon="item.icon"
+                            :href="item.path"
+                        />
                     </div>
                 </div>
             </div>
