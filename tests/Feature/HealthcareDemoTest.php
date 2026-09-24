@@ -40,7 +40,9 @@ class HealthcareDemoTest extends TestCase
         $this->scenario();
         $this->get('/inicio')->assertRedirect('/login');
         $this->assertGuest();
-        $this->actingAs(User::factory()->create())->get('/gestor/pacientes')->assertStatus(503);
+        // /gestor/pacientes is a real, manager-only route: an authenticated
+        // patient gets 403, not access via the demo's session context.
+        $this->actingAs(User::factory()->create())->get('/gestor/pacientes')->assertForbidden();
     }
 
     public function test_context_and_profile_are_checked_on_pages_and_data(): void

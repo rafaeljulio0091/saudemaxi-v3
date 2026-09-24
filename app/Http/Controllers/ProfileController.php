@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\SharesDashboardContext;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
@@ -13,22 +14,19 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
+    use SharesDashboardContext;
+
     /**
      * Display the user's profile form.
      */
     public function edit(Request $request): Response
     {
         $user = $request->user();
-        $tenant = $user->tenant;
 
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
-            'roleLabel' => $user->role->label(),
-            'tenant' => $tenant ? [
-                'name' => $tenant->name,
-                'brand_color' => $tenant->brand_color,
-            ] : null,
+            ...$this->dashboardContext($user),
         ]);
     }
 

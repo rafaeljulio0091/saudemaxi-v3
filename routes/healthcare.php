@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Healthcare\DemoController;
+use App\Http\Controllers\Healthcare\PatientController;
 use App\Http\Middleware\EnsureHealthcareDemo;
 use App\Http\Middleware\EnsureUserHasRole;
 use Illuminate\Support\Facades\Route;
@@ -29,8 +30,8 @@ $pages = [
 ];
 
 foreach ($pages as [$path, $page, $title, $profile, $module]) {
-    if ($path === 'gestor/painel') {
-        // The manager dashboard is registered below with a real implementation.
+    if (in_array($path, ['gestor/painel', 'gestor/pacientes'], true)) {
+        // These pages are registered below with a real implementation.
         continue;
     }
 
@@ -41,6 +42,11 @@ foreach ($pages as [$path, $page, $title, $profile, $module]) {
 Route::get('gestor/painel', [DashboardController::class, 'manager'])
     ->middleware(['auth', 'verified', EnsureUserHasRole::class.':manager'])
     ->name('healthcare.manager.dashboard');
+
+Route::middleware(['auth', 'verified', EnsureUserHasRole::class.':manager'])->group(function () {
+    Route::get('gestor/pacientes', [PatientController::class, 'index'])->name('healthcare.manager.patients');
+    Route::post('gestor/pacientes', [PatientController::class, 'store'])->name('healthcare.manager.patients.store');
+});
 
 Route::prefix('demonstracao')->middleware(EnsureHealthcareDemo::class)->group(function () use ($pages) {
     Route::get('/', [DemoController::class, 'entry'])->name('healthcare.demo');

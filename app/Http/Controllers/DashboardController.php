@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
+use App\Http\Controllers\Concerns\SharesDashboardContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -10,6 +11,8 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
+    use SharesDashboardContext;
+
     /**
      * Display the dashboard for the authenticated user's role.
      */
@@ -32,15 +35,6 @@ class DashboardController extends Controller
 
     private function render(Request $request, string $component): Response
     {
-        $user = $request->user();
-        $tenant = $user->tenant;
-
-        return Inertia::render($component, [
-            'roleLabel' => $user->role->label(),
-            'tenant' => $tenant ? [
-                'name' => $tenant->name,
-                'brand_color' => $tenant->brand_color,
-            ] : null,
-        ]);
+        return Inertia::render($component, $this->dashboardContext($request->user()));
     }
 }
