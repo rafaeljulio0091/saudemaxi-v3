@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Healthcare\DemoController;
 use App\Http\Middleware\EnsureHealthcareDemo;
+use App\Http\Middleware\EnsureUserHasRole;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -27,9 +29,18 @@ $pages = [
 ];
 
 foreach ($pages as [$path, $page, $title, $profile, $module]) {
+    if ($path === 'gestor/painel') {
+        // The manager dashboard is registered below with a real implementation.
+        continue;
+    }
+
     Route::get($path, fn () => Inertia::render('Healthcare/NotReady')
         ->toResponse(request())->setStatusCode(503))->middleware('auth');
 }
+
+Route::get('gestor/painel', [DashboardController::class, 'manager'])
+    ->middleware(['auth', 'verified', EnsureUserHasRole::class.':manager'])
+    ->name('healthcare.manager.dashboard');
 
 Route::prefix('demonstracao')->middleware(EnsureHealthcareDemo::class)->group(function () use ($pages) {
     Route::get('/', [DemoController::class, 'entry'])->name('healthcare.demo');
