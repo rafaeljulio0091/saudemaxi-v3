@@ -8,8 +8,12 @@
   server-side, timeout de 10 segundos por padrão e credenciais apenas no corpo
   da requisição.
 - `LsxMedicalPatientClient` implementa busca e criação de pacientes.
-- `LsxMedicalConsultationClient` implementa apenas histórico de consultas e
-  exige CPF antes de chamar o provedor.
+- `LsxMedicalConsultationClient` implementa apenas histórico de consultas,
+  exige CPF e o envia somente com dígitos. Na área do paciente
+  (`POST /triagem/consultations-search`) o CPF vem sempre da conta logada,
+  os filtros são validados e paciente sem tenant recebe 403.
+- Falhas de conexão não registram a mensagem da exceção, pois ela contém a URL
+  com CPF na query string.
 - `MakesTelemedicineRequests` centraliza URL, token, timeout e conversão de
   falhas para `TelemedicineApiException` (indisponível, não autorizado,
   inválido, não encontrado e rejeição de negócio).

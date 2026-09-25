@@ -31,8 +31,10 @@ trait MakesTelemedicineRequests
         try {
             $response = $call($http);
         } catch (ConnectionException $e) {
+            // The exception message embeds the request URL, whose query
+            // string may carry a CPF (consultation-history), so it is not logged.
             Log::error("lsxmedical.{$operation}.connection_error", [
-                'message' => $e->getMessage(),
+                'exception' => $e::class,
             ]);
 
             throw new TelemedicineApiException(

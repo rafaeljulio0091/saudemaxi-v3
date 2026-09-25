@@ -23,12 +23,16 @@ class LsxMedicalConsultationClient
      */
     public function search(array $filters): array
     {
-        if (empty($filters['cpf'])) {
+        // The documented example sends the CPF as digits only (?cpf=12345678901);
+        // stored or typed values may carry a mask.
+        $cpf = preg_replace('/\D/', '', (string) ($filters['cpf'] ?? ''));
+
+        if ($cpf === '') {
             return ['count' => 0, 'results' => []];
         }
 
         $query = array_filter([
-            'cpf' => $filters['cpf'],
+            'cpf' => $cpf,
             'status' => $filters['status'] ?? null,
             'doctor_cpf' => $filters['doctor_cpf'] ?? null,
             'start_date_min' => $filters['start_date_min'] ?? null,

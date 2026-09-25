@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Healthcare;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Healthcare\ConsultationHistoryRequest;
 use App\Services\Healthcare\HealthcareDataService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class HealthcareDataController extends Controller
 {
@@ -26,6 +28,15 @@ class HealthcareDataController extends Controller
                 'prescriptions/'.$request->user()->id,
                 'local',
             );
+        }
+
+        if ($operation === 'consultations-search') {
+            // The CPF is never taken from the browser: HealthcareDataService
+            // always uses the authenticated patient's own CPF.
+            $input = $request->validate([
+                'status' => ['nullable', Rule::in(ConsultationHistoryRequest::STATUSES)],
+                'page' => ['nullable', 'integer', 'min:1', 'max:1000'],
+            ]);
         }
 
         return response()->json($service->execute($request->user(), $operation, $input));

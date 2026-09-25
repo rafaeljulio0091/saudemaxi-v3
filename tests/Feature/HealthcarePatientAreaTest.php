@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -140,6 +142,80 @@ class HealthcarePatientAreaTest extends TestCase
         Http::fake(['*/api/clinic/consultation-history/*' => Http::response(null, 500)]);
 
         $this->actingAs($patient)->postJson('/triagem/consultations-search', [])->assertStatus(503);
+    }
+
+    public function test_consultations_search_uses_only_the_logged_in_patients_cpf_normalized_with_bearer_token(): void
+    {
+        config(['lsxmedical.service_token' => 'test-service-token']);
+        $patient = $this->makePatient(['cpf' => '123.456.789-01']);
+
+        Http::fake(['*/api/clinic/consultation-history/*' => Http::response([], 200)]);
+
+        $this->actingAs($patient)->postJson('/triagem/consultations-search', [
+            'cpf' => '99999999999',
+            'status' => 'FINISHED',
+            'page' => 2,
+        ])->assertOk()->assertJsonPath('count', 0)->assertJsonPath('page', 2);
+
+        Http::assertSent(fn ($request) => $request->method() === 'GET'
+            && str_contains($request->url(), '/api/clinic/consultation-history/')
+            && $request->hasHeader('Authorization', 'Bearer test-service-token')
+            && $request['cpf'] === '12345678901'
+            && $request['status'] === 'FINISHED'
+            && (int) $request['page'] === 2);
+    }
+
+    public function test_consultations_search_rejects_invalid_filters_without_calling_the_provider(): void
+    {
+        $patient = $this->makePatient(['cpf' => '12345678901']);
+
+        Http::fake();
+
+        $this->actingAs($patient)->postJson('/triagem/consultations-search', ['status' => 'NOT_A_STATUS'])
+            ->assertUnprocessable()->assertJsonValidationErrors('status');
+        $this->actingAs($patient)->postJson('/triagem/consultations-search', ['page' => 0])
+            ->assertUnprocessable()->assertJsonValidationErrors('page');
+
+        Http::assertNothingSent();
+    }
+
+    public function test_consultations_search_denies_patient_without_a_tenant_and_never_calls_the_provider(): void
+    {
+        $patient = User::factory()->create(['tenant_id' => null, 'cpf' => '12345678901']);
+
+        Http::fake();
+
+        $this->actingAs($patient)->postJson('/triagem/consultations-search', [])->assertForbidden();
+
+        Http::assertNothingSent();
+    }
+
+    public function test_consultations_search_is_forbidden_for_managers(): void
+    {
+        $manager = User::factory()->manager()->create();
+
+        Http::fake();
+
+        $this->actingAs($manager)->postJson('/triagem/consultations-search', [])->assertForbidden();
+
+        Http::assertNothingSent();
+    }
+
+    public function test_consultations_search_connection_failure_does_not_log_the_cpf(): void
+    {
+        $patient = $this->makePatient(['cpf' => '12345678901']);
+
+        Http::fake(fn () => throw new ConnectionException(
+            'cURL error 28 for https://example.test/api/clinic/consultation-history/?cpf=12345678901'
+        ));
+        Log::spy();
+
+        $this->actingAs($patient)->postJson('/triagem/consultations-search', [])->assertStatus(503);
+
+        Log::shouldHaveReceived('error')
+            ->withArgs(fn ($message, $context = []) => $message === 'lsxmedical.consultation-history.connection_error'
+                && ! str_contains(json_encode($context), '12345678901'))
+            ->once();
     }
 
     public function test_actions_without_a_telemedicine_client_fail_honestly_instead_of_faking_success(): void

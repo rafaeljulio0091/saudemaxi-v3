@@ -59,11 +59,17 @@ class HealthcareDataService
 
     private function searchConsultations(User $user, array $input): array
     {
+        // Same tenant rule as HealthcareContext::forPatient for the page.
+        $user->loadMissing('tenant');
+        abort_unless($user->isPatient() && $user->tenant, 403, 'Paciente sem vínculo com um cliente.');
+
+        $page = (int) ($input['page'] ?? 1);
+
         try {
             $result = $this->consultations->search([
                 'cpf' => $user->cpf,
                 'status' => $input['status'] ?? null,
-                'page' => $input['page'] ?? 1,
+                'page' => $page,
             ]);
         } catch (TelemedicineApiException $e) {
             report($e);
@@ -73,7 +79,7 @@ class HealthcareDataService
         return [
             'count' => $result['count'],
             'results' => array_map(fn (array $row) => $this->presentConsultation($row), $result['results']),
-            'page' => $input['page'] ?? 1,
+            'page' => $page,
             'per_page' => count($result['results']),
         ];
     }
