@@ -3,12 +3,18 @@ import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { useHealthcare } from '@/composables/useHealthcare';
 import { patientMenu, managerMenu } from '@/constants/healthcareNavigation';
+import { navItemsForRole } from '@/utils/dashboardNavigation';
 import AppIcon from './AppIcon.vue';
 const emit = defineEmits(['navigate']);
 const { context, href, moduleEnabled } = useHealthcare();
 const page = usePage();
+// Outside the demo, reuse the post-login menu so "Início" points at /dashboard.
 const menu = computed(() =>
-    context.value.profile === 'manager' ? managerMenu : patientMenu,
+    context.value.demo
+        ? context.value.profile === 'manager'
+            ? managerMenu
+            : patientMenu
+        : navItemsForRole(context.value.profile),
 );
 </script>
 <template>

@@ -77,6 +77,15 @@ watch(
                     >
                         {{ initials(context.patient?.nome || 'Gestor Demo') }}
                     </span>
+                    <Link
+                        v-if="!context.demo && page.props.auth?.user"
+                        :href="route('logout')"
+                        method="post"
+                        as="button"
+                        class="sm-link"
+                    >
+                        Sair
+                    </Link>
                 </header>
                 <main id="healthcare-content" class="sm-content" tabindex="-1">
                     <slot />
