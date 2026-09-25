@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Healthcare\DemoController;
+use App\Http\Controllers\Healthcare\HealthcareDataController;
+use App\Http\Controllers\Healthcare\PatientAreaController;
 use App\Http\Middleware\EnsureHealthcareDemo;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -26,10 +28,28 @@ $pages = [
     ['gestor/integracao', 'Manager/Integrations', 'Integrações', 'manager', null],
 ];
 
+// Paths already backed by a real (non-demonstration) implementation. Every
+// other entry in $pages keeps rendering the 503 placeholder below until it
+// gets the same treatment.
+$readyPatientPaths = ['atendimento', 'agendamento', 'farmacia', 'consultas', 'nr1'];
+
 foreach ($pages as [$path, $page, $title, $profile, $module]) {
+    if (in_array($path, $readyPatientPaths, true)) {
+        Route::get($path, [PatientAreaController::class, 'page'])
+            ->defaults('page', $page)->defaults('title', $title)->defaults('module', $module)
+            ->middleware('auth');
+
+        continue;
+    }
+
     Route::get($path, fn () => Inertia::render('Healthcare/NotReady')
         ->toResponse(request())->setStatusCode(503))->middleware('auth');
 }
+
+Route::middleware('auth')->group(function () {
+    Route::get('/dados/{resource}/{id?}', [HealthcareDataController::class, 'read'])->middleware('throttle:120,1,healthcare-read:');
+    Route::post('/dados/{operation}', [HealthcareDataController::class, 'execute'])->middleware('throttle:60,1,healthcare-operation:');
+});
 
 Route::prefix('demonstracao')->middleware(EnsureHealthcareDemo::class)->group(function () use ($pages) {
     Route::get('/', [DemoController::class, 'entry'])->name('healthcare.demo');

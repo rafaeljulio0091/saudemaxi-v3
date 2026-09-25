@@ -20,11 +20,13 @@ const open = ref(false),
     busy = ref(false),
     error = ref(''),
     preview = ref(''),
+    selectedFile = ref(null),
     uploaded = ref(null);
 function choose(event) {
     const file = event.target.files[0];
     if (preview.value) URL.revokeObjectURL(preview.value);
     preview.value = '';
+    selectedFile.value = null;
     error.value = '';
     if (!file) return;
     if (
@@ -34,6 +36,7 @@ function choose(event) {
         error.value = 'Escolha uma imagem JPG, PNG ou WebP de até 10 MB.';
         return;
     }
+    selectedFile.value = file;
     preview.value = URL.createObjectURL(file);
 }
 async function read() {
@@ -41,7 +44,7 @@ async function read() {
     busy.value = true;
     error.value = '';
     try {
-        uploaded.value = await pharmacy.readDemoPhoto();
+        uploaded.value = await pharmacy.readDemoPhoto(selectedFile.value);
         open.value = false;
         await state.run();
     } catch (e) {

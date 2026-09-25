@@ -3,6 +3,11 @@ export const pharmacyService = (client) => ({
     find: (id, signal) =>
         client.get('prescription/' + encodeURIComponent(id), signal),
     pharmacies: (signal) => client.get('pharmacies', signal),
-    readDemoPhoto: () => client.post('photo', {}),
+    readDemoPhoto: (file) => {
+        const form = new FormData();
+        if (file) form.append('file', file);
+
+        return client.post('photo', form);
+    },
     confirm: (data) => client.post('confirm-item', data),
 });
