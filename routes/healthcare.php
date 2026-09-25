@@ -3,6 +3,8 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Healthcare\ConsultationController;
 use App\Http\Controllers\Healthcare\DemoController;
+use App\Http\Controllers\Healthcare\HealthcareDataController;
+use App\Http\Controllers\Healthcare\PatientAreaController;
 use App\Http\Controllers\Healthcare\PatientController;
 use App\Http\Controllers\Healthcare\TriagePageController;
 use App\Http\Controllers\Triage\TriageMessageController;
@@ -33,8 +35,13 @@ $pages = [
     ['gestor/integracao', 'Manager/Integrations', 'Integrações', 'manager', null],
 ];
 
+// Paths already backed by a real (non-demonstration) implementation. Every
+// other entry in $pages keeps rendering the 503 placeholder below until it
+// gets the same treatment.
+$readyPatientPaths = ['orientacao', 'atendimento', 'agendamento', 'farmacia', 'consultas', 'nr1'];
+
 foreach ($pages as [$path, $page, $title, $profile, $module]) {
-    if (in_array($path, ['orientacao', 'gestor/painel', 'gestor/pacientes', 'gestor/consultas'], true)) {
+    if (in_array($path, [...$readyPatientPaths, 'gestor/painel', 'gestor/pacientes', 'gestor/consultas'], true)) {
         // These pages are registered below with a real implementation.
         continue;
     }
@@ -47,6 +54,16 @@ Route::get('orientacao', TriagePageController::class)
     ->middleware(['auth', 'verified', EnsureUserHasRole::class.':patient'])
     ->name('healthcare.patient.guidance');
 
+foreach ($pages as [$path, $page, $title, $profile, $module]) {
+    if (! in_array($path, ['atendimento', 'agendamento', 'farmacia', 'consultas', 'nr1'], true)) {
+        continue;
+    }
+
+    Route::get($path, [PatientAreaController::class, 'page'])
+        ->defaults('page', $page)->defaults('title', $title)->defaults('module', $module)
+        ->middleware(['auth', 'verified', EnsureUserHasRole::class.':patient']);
+}
+
 Route::prefix('triagem')->middleware(['auth', 'verified'])->group(function () {
     Route::post('sessoes', [TriageSessionController::class, 'store'])
         ->middleware([EnsureUserHasRole::class.':patient', 'throttle:triage-start'])
@@ -57,6 +74,17 @@ Route::prefix('triagem')->middleware(['auth', 'verified'])->group(function () {
         ->middleware([EnsureUserHasRole::class.':patient', 'throttle:triage-messages'])
         ->block(5, 5)
         ->name('triage.messages.store');
+
+    // Generic data endpoints for the real (non-demonstration) patient area:
+    // /atendimento, /agendamento, /farmacia, /consultas and /nr1 all share
+    // the same apiBase (see HealthcareContext::forPatient) already used by
+    // the triage conversation above.
+    Route::get('{resource}/{id?}', [HealthcareDataController::class, 'read'])
+        ->where('resource', '(?!sessoes).*')
+        ->middleware([EnsureUserHasRole::class.':patient', 'throttle:120,1,healthcare-read:']);
+    Route::post('{operation}', [HealthcareDataController::class, 'execute'])
+        ->where('operation', '(?!sessoes).*')
+        ->middleware([EnsureUserHasRole::class.':patient', 'throttle:60,1,healthcare-operation:']);
 });
 
 Route::get('gestor/painel', [DashboardController::class, 'manager'])

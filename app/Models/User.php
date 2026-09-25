@@ -78,4 +78,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(TriageSession::class, 'patient_id');
     }
+
+    public function prescriptions(): HasMany
+    {
+        return $this->hasMany(Prescription::class, 'patient_id');
+    }
 }

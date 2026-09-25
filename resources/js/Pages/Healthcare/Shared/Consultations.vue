@@ -114,7 +114,9 @@ onMounted(state.run);
                                 <th scope="col">Especialidade</th>
                                 <th scope="col">Profissional</th>
                                 <th scope="col">Situação</th>
-                                <th scope="col">Pagamento</th>
+                                <th v-if="context.demo" scope="col">
+                                    Pagamento
+                                </th>
                                 <th scope="col">Detalhes</th>
                             </tr>
                         </thead>
@@ -125,9 +127,15 @@ onMounted(state.run);
                             >
                                 <td>{{ consultation.codigo }}</td>
                                 <td>
-                                    {{ date(consultation.agendadaPara) }}
                                     {{
-                                        consultation.agendadaPara.slice(11, 16)
+                                        consultation.agendadaPara
+                                            ? date(consultation.agendadaPara) +
+                                              ' ' +
+                                              consultation.agendadaPara.slice(
+                                                  11,
+                                                  16,
+                                              )
+                                            : '-'
                                     }}
                                 </td>
                                 <td>{{ consultation.especialidade }}</td>
@@ -139,7 +147,7 @@ onMounted(state.run);
                                         :status="consultation.status"
                                     />
                                 </td>
-                                <td>
+                                <td v-if="context.demo">
                                     <span
                                         class="sm-badge"
                                         :class="
@@ -195,11 +203,11 @@ onMounted(state.run);
             <p>{{ selected.medico || 'Profissional a definir' }}</p>
             <p>{{ date(selected.agendadaPara) }} · {{ selected.codigo }}</p>
             <p v-if="selected.duracao">Duração: {{ selected.duracao }}</p>
-            <AppAlert>
+            <AppAlert v-if="context.demo">
                 O histórico demonstrativo não confirma um atendimento real.
                 Cancelamento e documentos dependem da plataforma de atendimento.
             </AppAlert>
-            <template v-if="context.profile === 'manager'">
+            <template v-if="context.demo && context.profile === 'manager'">
                 <AppAlert tone="warning">
                     A marcação abaixo altera somente o exemplo. Não realiza
                     cobrança ou estorno.
