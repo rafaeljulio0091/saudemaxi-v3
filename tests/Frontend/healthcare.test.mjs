@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createPinia, setActivePinia } from 'pinia';
 import { useMaxStore } from '../../resources/js/stores/max.js';
+import { useTriageStore } from '../../resources/js/stores/triage.js';
 import { brandTokens } from '../../resources/js/utils/brandColor.js';
 import { consultationStatuses } from '../../resources/js/constants/consultationStatus.js';
 
@@ -52,6 +53,45 @@ test('MAX prevents repeated submission and allows retry after failure', async ()
         'Consulta',
         '/consultas',
     );
+    assert.equal(store.messages.length, 2);
+});
+
+test('triage requires a session, prevents repeated sends, and closes safely', async () => {
+    setActivePinia(createPinia());
+    const store = useTriageStore();
+    store.reset('tenant-a:patient-a');
+
+    await store.start({
+        start: async () => ({
+            id: 'session-a',
+            status: 'active',
+            messages: [],
+            routing: null,
+        }),
+    });
+
+    let finish;
+    let calls = 0;
+    const service = {
+        send: () => {
+            calls++;
+            return new Promise((resolve) => {
+                finish = resolve;
+            });
+        },
+    };
+    const pending = store.send(service, 'Minha mensagem');
+    await store.send(service, 'Mensagem repetida');
+    assert.equal(calls, 1);
+
+    finish({
+        session: { status: 'human_review' },
+        message: { role: 'assistant', text: 'Encaminhado.' },
+        state: { classification: 'human_review' },
+    });
+    await pending;
+
+    assert.equal(store.closed, true);
     assert.equal(store.messages.length, 2);
 });
 

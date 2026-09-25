@@ -15,6 +15,7 @@ http.interceptors.response.use(
             403: 'Você não tem acesso a este serviço.',
             404: 'Não encontramos este registro.',
             419: 'Sua sessão expirou. Atualize a página.',
+            409: 'A solicitação anterior ainda está sendo processada.',
             422: 'Confira os campos informados.',
             429: 'Aguarde um momento antes de tentar novamente.',
             500: 'Não foi possível concluir agora.',

@@ -488,6 +488,64 @@
     background: var(--erro-fraco);
     color: var(--erro);
 }
+.sm-triage {
+    display: grid;
+    gap: var(--e5);
+}
+.sm-triage-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--e4);
+    padding-bottom: var(--e4);
+    border-bottom: 1px solid var(--linha);
+}
+.sm-triage-head h2 {
+    margin: 2px 0 4px;
+}
+.sm-consent {
+    max-width: 760px;
+}
+.sm-consent-check {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--e3);
+    padding: var(--e4);
+    border: 1px solid var(--linha);
+    border-radius: var(--r-md);
+    background: var(--fundo);
+    cursor: pointer;
+}
+.sm-consent-check input {
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    flex: none;
+}
+.sm-triage-chat {
+    min-height: 320px;
+    max-height: 56dvh;
+    padding: var(--e4);
+    border: 1px solid var(--linha);
+    border-radius: var(--r-md);
+    background: #fbfcfe;
+}
+.sm-triage-form {
+    display: grid;
+    gap: var(--e2);
+}
+.sm-triage-form > label {
+    font-weight: 650;
+}
+.sm-triage-input {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--e3);
+    align-items: end;
+}
+.sm-triage-input .sm-button {
+    min-width: 120px;
+}
 .sm-step {
     padding: 8px 12px;
     border-radius: 99px;

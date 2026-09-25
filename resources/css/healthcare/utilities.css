@@ -103,6 +103,9 @@
     .sm-pagination {
         flex-wrap: wrap;
     }
+    .sm-triage-input {
+        grid-template-columns: 1fr;
+    }
     .sm-dialog-body {
         padding: var(--e4);
     }

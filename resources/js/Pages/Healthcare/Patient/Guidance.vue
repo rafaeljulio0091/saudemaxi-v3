@@ -1,5 +1,6 @@
 <script setup>
 import MaxConversation from '@/Components/Healthcare/MaxConversation.vue';
+import TriageConversation from '@/Components/Healthcare/TriageConversation.vue';
 import Layout from '@/Layouts/HealthcareLayout.vue';
 import AppCard from '@/Components/Healthcare/AppCard.vue';
 import AppButton from '@/Components/Healthcare/AppButton.vue';
@@ -11,7 +12,7 @@ import { useHealthcareServices } from '@/composables/useHealthcareServices';
 import { useAsyncState } from '@/composables/useAsyncState';
 defineOptions({ layout: Layout });
 
-const { href } = useHealthcare();
+const { href, context } = useHealthcare();
 </script>
 <template>
     <PageHeader
@@ -19,11 +20,19 @@ const { href } = useHealthcare();
         description="Orientação para encontrar o próximo cuidado."
     />
     <div class="sm-stack">
-        <AppAlert tone="warning">
+        <AppAlert v-if="context.demo" tone="warning">
             O roteiro clínico aguarda validação. Esta conversa demonstra somente
             encaminhamentos, sem avaliação médica.
         </AppAlert>
-        <AppCard><MaxConversation /></AppCard>
+        <AppAlert v-else>
+            Você está falando com um assistente automatizado. Em caso de risco
+            imediato, procure um serviço de emergência ou ligue para o SAMU pelo
+            número 192.
+        </AppAlert>
+        <AppCard>
+            <MaxConversation v-if="context.demo" />
+            <TriageConversation v-else />
+        </AppCard>
         <AppAlert>
             Entrada por voz ainda indisponível. Você pode escrever sua mensagem
             ou procurar atendimento.

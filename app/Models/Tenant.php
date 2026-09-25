@@ -30,4 +30,9 @@ class Tenant extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    public function triageSessions(): HasMany
+    {
+        return $this->hasMany(TriageSession::class);
+    }
 }

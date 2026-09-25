@@ -4,6 +4,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Healthcare\ConsultationController;
 use App\Http\Controllers\Healthcare\DemoController;
 use App\Http\Controllers\Healthcare\PatientController;
+use App\Http\Controllers\Healthcare\TriagePageController;
+use App\Http\Controllers\Triage\TriageMessageController;
+use App\Http\Controllers\Triage\TriageSessionController;
 use App\Http\Middleware\EnsureHealthcareDemo;
 use App\Http\Middleware\EnsureUserHasRole;
 use Illuminate\Support\Facades\Route;
@@ -31,7 +34,7 @@ $pages = [
 ];
 
 foreach ($pages as [$path, $page, $title, $profile, $module]) {
-    if (in_array($path, ['gestor/painel', 'gestor/pacientes', 'gestor/consultas'], true)) {
+    if (in_array($path, ['orientacao', 'gestor/painel', 'gestor/pacientes', 'gestor/consultas'], true)) {
         // These pages are registered below with a real implementation.
         continue;
     }
@@ -39,6 +42,22 @@ foreach ($pages as [$path, $page, $title, $profile, $module]) {
     Route::get($path, fn () => Inertia::render('Healthcare/NotReady')
         ->toResponse(request())->setStatusCode(503))->middleware('auth');
 }
+
+Route::get('orientacao', TriagePageController::class)
+    ->middleware(['auth', 'verified', EnsureUserHasRole::class.':patient'])
+    ->name('healthcare.patient.guidance');
+
+Route::prefix('triagem')->middleware(['auth', 'verified'])->group(function () {
+    Route::post('sessoes', [TriageSessionController::class, 'store'])
+        ->middleware([EnsureUserHasRole::class.':patient', 'throttle:triage-start'])
+        ->name('triage.sessions.store');
+    Route::get('sessoes/{triageSession}', [TriageSessionController::class, 'show'])
+        ->name('triage.sessions.show');
+    Route::post('sessoes/{triageSession}/mensagens', [TriageMessageController::class, 'store'])
+        ->middleware([EnsureUserHasRole::class.':patient', 'throttle:triage-messages'])
+        ->block(5, 5)
+        ->name('triage.messages.store');
+});
 
 Route::get('gestor/painel', [DashboardController::class, 'manager'])
     ->middleware(['auth', 'verified', EnsureUserHasRole::class.':manager'])
