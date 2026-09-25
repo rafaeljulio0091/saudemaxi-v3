@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Healthcare;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Healthcare\ConsultationHistoryRequest;
+use App\Models\User;
 use App\Services\Healthcare\HealthcareDataService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -36,6 +37,19 @@ class HealthcareDataController extends Controller
             $input = $request->validate([
                 'status' => ['nullable', Rule::in(ConsultationHistoryRequest::STATUSES)],
                 'page' => ['nullable', 'integer', 'min:1', 'max:1000'],
+            ]);
+        }
+
+        if ($operation === 'patient') {
+            // Always the authenticated patient's own record: any "id" sent by
+            // the browser is ignored. Same rules as ProfileUpdateRequest.
+            $input = $request->validate([
+                'nome' => ['required', 'string', 'max:255'],
+                'email' => [
+                    'required', 'string', 'lowercase', 'email', 'max:255',
+                    Rule::unique(User::class)->ignore($request->user()->id),
+                ],
+                'telefone' => ['nullable', 'string', 'max:30'],
             ]);
         }
 

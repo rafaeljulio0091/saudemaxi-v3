@@ -23,6 +23,8 @@ class HealthcarePatientAreaTest extends TestCase
         '/farmacia' => 'Healthcare/Patient/Pharmacy',
         '/consultas' => 'Healthcare/Shared/Consultations',
         '/nr1' => 'Healthcare/Patient/MentalHealth',
+        '/conta' => 'Healthcare/Patient/Account',
+        '/ajuda' => 'Healthcare/Patient/Help',
     ];
 
     private function makePatient(array $attributes = []): User
@@ -216,6 +218,71 @@ class HealthcarePatientAreaTest extends TestCase
             ->withArgs(fn ($message, $context = []) => $message === 'lsxmedical.consultation-history.connection_error'
                 && ! str_contains(json_encode($context), '12345678901'))
             ->once();
+    }
+
+    public function test_account_returns_only_the_logged_in_patients_own_data(): void
+    {
+        $patient = $this->makePatient([
+            'name' => 'Maria Souza', 'email' => 'maria@example.test', 'phone' => '21999990000',
+            'birthdate' => '1980-02-03', 'cpf' => '12345678901',
+        ]);
+
+        $this->actingAs($patient)->getJson('/triagem/account')
+            ->assertOk()
+            ->assertExactJson([
+                'id' => $patient->id, 'nome' => 'Maria Souza', 'email' => 'maria@example.test',
+                'telefone' => '21999990000', 'nascimento' => '1980-02-03', 'dependentes' => null,
+            ]);
+    }
+
+    public function test_account_update_changes_only_the_logged_in_patient_and_ignores_the_browser_id(): void
+    {
+        $patient = $this->makePatient(['email' => 'maria@example.test']);
+        $other = $this->makePatient(['name' => 'Outro', 'email' => 'outro@example.test']);
+
+        $this->actingAs($patient)->postJson('/triagem/patient', [
+            'id' => $other->id, 'nome' => 'Maria Atualizada', 'email' => 'maria@example.test', 'telefone' => '21988887777',
+        ])->assertOk()->assertJsonPath('id', $patient->id)->assertJsonPath('nome', 'Maria Atualizada');
+
+        $this->assertSame('Maria Atualizada', $patient->refresh()->name);
+        $this->assertSame('21988887777', $patient->phone);
+        $this->assertNotNull($patient->email_verified_at);
+        $this->assertSame('Outro', $other->refresh()->name);
+    }
+
+    public function test_account_update_resets_email_verification_when_the_email_changes(): void
+    {
+        $patient = $this->makePatient(['email' => 'maria@example.test']);
+
+        $this->actingAs($patient)->postJson('/triagem/patient', [
+            'nome' => 'Maria', 'email' => 'nova@example.test', 'telefone' => null,
+        ])->assertOk();
+
+        $this->assertSame('nova@example.test', $patient->refresh()->email);
+        $this->assertNull($patient->email_verified_at);
+    }
+
+    public function test_account_update_validates_input(): void
+    {
+        $this->makePatient(['email' => 'ocupado@example.test']);
+        $patient = $this->makePatient();
+
+        $this->actingAs($patient)->postJson('/triagem/patient', ['nome' => '', 'email' => 'invalido'])
+            ->assertUnprocessable()->assertJsonValidationErrors(['nome', 'email']);
+        $this->actingAs($patient)->postJson('/triagem/patient', ['nome' => 'Maria', 'email' => 'ocupado@example.test'])
+            ->assertUnprocessable()->assertJsonValidationErrors('email');
+    }
+
+    public function test_account_endpoints_deny_patients_without_a_tenant_and_managers(): void
+    {
+        $patient = User::factory()->create(['tenant_id' => null, 'name' => 'Sem vínculo']);
+        $this->actingAs($patient)->getJson('/triagem/account')->assertForbidden();
+        $this->actingAs($patient)->postJson('/triagem/patient', ['nome' => 'X', 'email' => $patient->email])->assertForbidden();
+        $this->assertSame('Sem vínculo', $patient->refresh()->name);
+
+        $manager = User::factory()->manager()->create();
+        $this->actingAs($manager)->getJson('/triagem/account')->assertForbidden();
+        $this->actingAs($manager)->postJson('/triagem/patient', ['nome' => 'X', 'email' => $manager->email])->assertForbidden();
     }
 
     public function test_actions_without_a_telemedicine_client_fail_honestly_instead_of_faking_success(): void

@@ -35,6 +35,7 @@ class HealthcareDataService
         }
 
         return match ($resource) {
+            'account' => $this->account($user),
             'prescriptions' => $user->prescriptions()
                 ->latest()
                 ->get()
@@ -52,6 +53,7 @@ class HealthcareDataService
 
         return match ($operation) {
             'consultations-search' => $this->searchConsultations($user, $input),
+            'patient' => $this->updateAccount($user, $input),
             'photo' => $this->storePrescriptionPhoto($user, $input),
             default => abort(404),
         };
@@ -59,9 +61,7 @@ class HealthcareDataService
 
     private function searchConsultations(User $user, array $input): array
     {
-        // Same tenant rule as HealthcareContext::forPatient for the page.
-        $user->loadMissing('tenant');
-        abort_unless($user->isPatient() && $user->tenant, 403, 'Paciente sem vínculo com um cliente.');
+        $this->ensurePatientWithTenant($user);
 
         $page = (int) ($input['page'] ?? 1);
 
@@ -82,6 +82,62 @@ class HealthcareDataService
             'page' => $page,
             'per_page' => count($result['results']),
         ];
+    }
+
+    private function account(User $user): array
+    {
+        $this->ensurePatientWithTenant($user);
+
+        return $this->presentAccount($user);
+    }
+
+    /**
+     * @param  array{nome: string, email: string, telefone: ?string}  $input
+     */
+    private function updateAccount(User $user, array $input): array
+    {
+        $this->ensurePatientWithTenant($user);
+
+        $user->fill([
+            'name' => $input['nome'],
+            'email' => $input['email'],
+            'phone' => $input['telefone'] ?? null,
+        ]);
+
+        // Same rule as ProfileController::update.
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
+
+        return $this->presentAccount($user);
+    }
+
+    /**
+     * Only the fields Patient/Account.vue shows. The CPF is left out on
+     * purpose (data minimisation), and there is no local source for
+     * dependents, so it is null instead of an invented count.
+     */
+    private function presentAccount(User $user): array
+    {
+        return [
+            'id' => $user->id,
+            'nome' => $user->name,
+            'email' => $user->email,
+            'telefone' => $user->phone,
+            'nascimento' => $user->birthdate?->format('Y-m-d'),
+            'dependentes' => null,
+        ];
+    }
+
+    /**
+     * Same tenant rule as HealthcareContext::forPatient for the pages.
+     */
+    private function ensurePatientWithTenant(User $user): void
+    {
+        $user->loadMissing('tenant');
+        abort_unless($user->isPatient() && $user->tenant, 403, 'Paciente sem vínculo com um cliente.');
     }
 
     private function storePrescriptionPhoto(User $user, array $input): array

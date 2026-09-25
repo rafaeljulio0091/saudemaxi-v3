@@ -38,7 +38,7 @@ $pages = [
 // Paths already backed by a real (non-demonstration) implementation. Every
 // other entry in $pages keeps rendering the 503 placeholder below until it
 // gets the same treatment.
-$readyPatientPaths = ['orientacao', 'atendimento', 'agendamento', 'farmacia', 'consultas', 'nr1'];
+$readyPatientPaths = ['orientacao', 'atendimento', 'agendamento', 'farmacia', 'consultas', 'nr1', 'conta', 'ajuda'];
 
 foreach ($pages as [$path, $page, $title, $profile, $module]) {
     if (in_array($path, [...$readyPatientPaths, 'gestor/painel', 'gestor/pacientes', 'gestor/consultas'], true)) {
@@ -55,7 +55,7 @@ Route::get('orientacao', TriagePageController::class)
     ->name('healthcare.patient.guidance');
 
 foreach ($pages as [$path, $page, $title, $profile, $module]) {
-    if (! in_array($path, ['atendimento', 'agendamento', 'farmacia', 'consultas', 'nr1'], true)) {
+    if (! in_array($path, ['atendimento', 'agendamento', 'farmacia', 'consultas', 'nr1', 'conta', 'ajuda'], true)) {
         continue;
     }
 

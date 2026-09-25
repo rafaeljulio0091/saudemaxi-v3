@@ -88,11 +88,19 @@ onMounted(state.run);
                         Nascimento: {{ date(state.data.value.nascimento) }}
                     </p>
                     <AppAlert v-if="saved" tone="success">
-                        Dados atualizados na demonstração.
+                        {{
+                            context.demo
+                                ? 'Dados atualizados na demonstração.'
+                                : 'Dados atualizados.'
+                        }}
                     </AppAlert>
                     <AppAlert v-if="error" tone="danger">{{ error }}</AppAlert>
                     <AppButton type="submit" :busy="busy">
-                        Salvar dados demonstrativos
+                        {{
+                            context.demo
+                                ? 'Salvar dados demonstrativos'
+                                : 'Salvar dados'
+                        }}
                     </AppButton>
                 </form>
             </AppCard>
@@ -100,7 +108,10 @@ onMounted(state.run);
                 <AppCard>
                     <h2>{{ context.plan.nome }}</h2>
                     <p>{{ context.tenant.nome }}</p>
-                    <p class="sm-muted">
+                    <p
+                        v-if="context.plan.maxDependentes != null"
+                        class="sm-muted"
+                    >
                         Até {{ context.plan.maxDependentes }} dependentes
                     </p>
                     <div class="sm-row sm-mt">
@@ -124,9 +135,13 @@ onMounted(state.run);
                 </AppCard>
                 <AppCard>
                     <h2>Dependentes</h2>
-                    <p>
+                    <p v-if="context.demo">
                         {{ state.data.value.dependentes }} dependentes no
                         cadastro demonstrativo.
+                    </p>
+                    <p v-else>
+                        Os dependentes vinculados ainda não estão disponíveis
+                        nesta conta.
                     </p>
                     <p class="sm-muted sm-small sm-mt">
                         O acesso ao histórico de menores aguarda definição de
