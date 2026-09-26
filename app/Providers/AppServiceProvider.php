@@ -2,9 +2,13 @@
 
 namespace App\Providers;
 
+use App\AI\Contracts\AssistantIntentProvider;
+use App\AI\Contracts\AssistantReplyProvider;
 use App\AI\Contracts\ConversationalAIProvider;
 use App\AI\Contracts\DecisionAIProvider;
+use App\AI\Providers\JevAssistantProvider;
 use App\AI\Providers\JevProvider;
+use App\AI\Providers\OpenAIAssistantProvider;
 use App\AI\Providers\OpenAIProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -21,6 +25,8 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(ConversationalAIProvider::class, OpenAIProvider::class);
         $this->app->bind(DecisionAIProvider::class, JevProvider::class);
+        $this->app->bind(AssistantIntentProvider::class, JevAssistantProvider::class);
+        $this->app->bind(AssistantReplyProvider::class, OpenAIAssistantProvider::class);
     }
 
     /**
@@ -29,6 +35,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
+
+        RateLimiter::for('max-messages', fn (Request $request) => Limit::perMinute(12)
+            ->by((string) ($request->user()?->id ?? $request->ip())));
 
         RateLimiter::for('triage-start', fn (Request $request) => Limit::perHour(5)
             ->by((string) ($request->user()?->id ?? $request->ip())));

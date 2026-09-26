@@ -12,7 +12,7 @@ class HealthcareDataService
     /**
      * Actions that depend on a provider capability that has no client in this
      * codebase yet (specialties, availability, booking, immediate video
-     * routing, the MAX assistant). Building one would mean guessing an
+     * routing). Building one would mean guessing an
      * undocumented contract, which AGENTS.md §12/§25 rules out. These report
      * an explicit, honest "not configured" failure instead.
      */
@@ -23,7 +23,6 @@ class HealthcareDataService
         'doctors' => 'A busca de profissionais depende de uma integração que ainda não existe com a plataforma de atendimento.',
         'schedule' => 'A criação de agendamentos depende de uma integração que ainda não existe com a plataforma de atendimento.',
         'emergency' => 'O encaminhamento por vídeo depende de uma integração que ainda não existe com a plataforma de atendimento.',
-        'max' => 'O assistente MAX ainda não está configurado para esta conta.',
     ];
 
     public function __construct(

@@ -6,6 +6,13 @@
 - Provedores de IA são abstraídos por `ConversationalAIProvider` e
   `DecisionAIProvider`, com implementações `OpenAIProvider` e `JevProvider`.
   As URLs/chaves são obtidas de `config/ai.php` e as chamadas são server-side.
+- O assistente MAX (`app/Max`) usa contratos próprios, `AssistantIntentProvider`
+  (Jev, `JevAssistantProvider`) e `AssistantReplyProvider` (OpenAI,
+  `OpenAIAssistantProvider`), com as mesmas credenciais de `config/ai.php`,
+  habilitados por `ai.max.enabled`. Regras determinísticas (emergência via
+  `SafetyRuleEngine`, privacidade, medicação, sintomas) rodam antes e sem IA;
+  falhas de provedor voltam para essas regras. Links só vêm de
+  `MaxActionCatalog`; conversas não são persistidas nem registradas em log.
 - Testes de integração HTTP usam `Http::fake()` e asserções de requisições;
   não há dependência declarada da API real nos testes.
 - Não foram encontrados webhooks, listeners, filas ou jobs customizados.

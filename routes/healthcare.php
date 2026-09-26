@@ -6,6 +6,7 @@ use App\Http\Controllers\Healthcare\DemoController;
 use App\Http\Controllers\Healthcare\HealthcareDataController;
 use App\Http\Controllers\Healthcare\ManagerAreaController;
 use App\Http\Controllers\Healthcare\ManagerDataController;
+use App\Http\Controllers\Healthcare\MaxMessageController;
 use App\Http\Controllers\Healthcare\PatientAreaController;
 use App\Http\Controllers\Healthcare\PatientController;
 use App\Http\Controllers\Healthcare\TriagePageController;
@@ -78,6 +79,11 @@ Route::prefix('triagem')->middleware(['auth', 'verified'])->group(function () {
         ->block(5, 5)
         ->name('triage.messages.store');
 
+    // MAX assistant (official). Registered before the generic operation route.
+    Route::post('max', MaxMessageController::class)
+        ->middleware([EnsureUserHasRole::class.':patient', 'throttle:max-messages'])
+        ->name('max.patient');
+
     // Generic data endpoints for the real (non-demonstration) patient area:
     // /atendimento, /agendamento, /farmacia, /consultas and /nr1 all share
     // the same apiBase (see HealthcareContext::forPatient) already used by
@@ -106,6 +112,9 @@ Route::middleware(['auth', 'verified', EnsureUserHasRole::class.':manager'])->gr
     // HealthcareContext::forManager), always scoped to the manager's tenant.
     Route::get('gestor/dados/{resource}', [ManagerDataController::class, 'read'])
         ->middleware('throttle:120,1,manager-read:');
+    Route::post('gestor/dados/max', MaxMessageController::class)
+        ->middleware('throttle:max-messages')
+        ->name('max.manager');
     Route::post('gestor/dados/{operation}', [ManagerDataController::class, 'execute'])
         ->middleware('throttle:60,1,manager-operation:');
 

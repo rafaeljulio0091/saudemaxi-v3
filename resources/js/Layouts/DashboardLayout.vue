@@ -2,7 +2,7 @@
 import '@/../css/healthcare/tokens.css';
 import '@/../css/healthcare/components.css';
 import '@/../css/healthcare/utilities.css';
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { useHealthcareUi } from '@/stores/healthcareUi';
 import { brandTokens } from '@/utils/brandColor';
@@ -10,6 +10,7 @@ import { initials } from '@/utils/healthcareFormat';
 import AppButton from '@/Components/Healthcare/AppButton.vue';
 import AppModal from '@/Components/Healthcare/AppModal.vue';
 import DashboardNavigation from '@/Components/DashboardNavigation.vue';
+import MaxAssistant from '@/Components/Healthcare/MaxAssistant.vue';
 
 const props = defineProps({
     title: {
@@ -32,6 +33,20 @@ const props = defineProps({
 
 const ui = useHealthcareUi();
 const page = usePage();
+
+// Same endpoints as HealthcareContext (patient: /triagem, manager:
+// /gestor/dados). MAX needs a tenant, so it is hidden without one.
+const maxContext = computed(() => {
+    const user = page.props.auth.user;
+    const profile = user.role === 'manager' ? 'manager' : 'patient';
+    return {
+        demo: false,
+        profile,
+        key: `${props.tenant?.name}:${profile}:${user.id}`,
+        basePath: '',
+        apiBase: profile === 'manager' ? '/gestor/dados' : '/triagem',
+    };
+});
 
 watch(
     () => page.url,
@@ -96,6 +111,7 @@ watch(
                 </main>
             </div>
         </div>
+        <MaxAssistant v-if="tenant" :context="maxContext" />
         <AppModal :open="ui.menuOpen" title="Menu" @close="ui.menuOpen = false">
             <DashboardNavigation
                 :items="navItems"

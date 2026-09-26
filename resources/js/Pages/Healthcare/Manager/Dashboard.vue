@@ -200,7 +200,7 @@ onMounted(state.run);
                 </details>
             </AppCard>
         </AsyncState>
-        <AppCard v-if="context.demo" class="sm-max-invite">
+        <AppCard class="sm-max-invite">
             <div class="sm-row">
                 <div class="sm-grow">
                     <h2>MAX ajuda a encontrar o que precisa</h2>

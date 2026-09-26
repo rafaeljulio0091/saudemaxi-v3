@@ -288,7 +288,7 @@ class HealthcarePatientAreaTest extends TestCase
     public function test_actions_without_a_telemedicine_client_fail_honestly_instead_of_faking_success(): void
     {
         $patient = $this->makePatient();
-        foreach (['emergency', 'max'] as $operation) {
+        foreach (['emergency'] as $operation) {
             $this->actingAs($patient)->postJson("/triagem/{$operation}", [])->assertStatus(503);
         }
         $this->actingAs($patient)->getJson('/triagem/specialties')->assertStatus(503);

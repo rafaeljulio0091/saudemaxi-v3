@@ -3,12 +3,19 @@ import { ref, computed, nextTick, watch, useId } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useMaxStore } from '@/stores/max';
 import { useHealthcare } from '@/composables/useHealthcare';
-import { useHealthcareServices } from '@/composables/useHealthcareServices';
+import { createHealthcareClient } from '@/services/healthcareClient';
+import { maxService } from '@/services/max.service';
 import AppButton from './AppButton.vue';
 import AppAlert from './AppAlert.vue';
+// The context comes from the layout: the Inertia "healthcare" prop on
+// HealthcareLayout pages, or one built by DashboardLayout.
+const props = defineProps({ context: { type: Object, default: null } });
 const store = useMaxStore();
-const { context, href } = useHealthcare();
-const { max } = useHealthcareServices();
+const healthcare = useHealthcare();
+const context = computed(() => props.context || healthcare.context.value);
+const href = (path) =>
+    path.startsWith('tel:') ? path : (context.value.basePath || '') + path;
+const max = maxService(createHealthcareClient(context));
 const page = usePage();
 const messageId = useId();
 const input = ref(''),
@@ -40,8 +47,14 @@ async function send(text = input.value) {
             Sou o MAX. Ajudo você a encontrar informações e o próximo cuidado.
         </p>
         <AppAlert tone="warning">
-            Respostas demonstrativas. O MAX não faz avaliação médica. Não
-            informe dados reais de saúde.
+            <template v-if="context.demo">
+                Respostas demonstrativas. O MAX não faz avaliação médica. Não
+                informe dados reais de saúde.
+            </template>
+            <template v-else>
+                O MAX não faz avaliação médica. Não informe CPF, contatos ou
+                dados de saúde na conversa.
+            </template>
         </AppAlert>
         <div
             ref="log"

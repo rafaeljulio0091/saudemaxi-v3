@@ -11,7 +11,7 @@ import { initials } from '@/utils/healthcareFormat';
 import AppNavigation from '@/Components/Healthcare/AppNavigation.vue';
 import AppButton from '@/Components/Healthcare/AppButton.vue';
 import AppModal from '@/Components/Healthcare/AppModal.vue';
-import MaxConversation from '@/Components/Healthcare/MaxConversation.vue';
+import MaxAssistant from '@/Components/Healthcare/MaxAssistant.vue';
 const { context } = useHealthcare();
 const ui = useHealthcareUi();
 const page = usePage();
@@ -102,24 +102,9 @@ watch(
                 </main>
             </div>
         </div>
-        <AppButton
-            v-if="context.demo"
-            class="sm-max-launch"
-            :aria-expanded="ui.maxOpen"
-            @click="ui.maxOpen = true"
-        >
-            Ⓜ MAX
-        </AppButton>
+        <MaxAssistant :context="context" />
         <AppModal :open="ui.menuOpen" title="Menu" @close="ui.menuOpen = false">
             <AppNavigation @navigate="ui.menuOpen = false" />
-        </AppModal>
-        <AppModal
-            v-if="context.demo"
-            :open="ui.maxOpen"
-            title="MAX, seu assistente"
-            @close="ui.maxOpen = false"
-        >
-            <MaxConversation v-if="ui.maxOpen" />
         </AppModal>
     </div>
 </template>
