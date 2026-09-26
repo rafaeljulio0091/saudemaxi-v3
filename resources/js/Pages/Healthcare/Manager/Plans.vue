@@ -14,6 +14,7 @@ import { useHealthcareServices } from '@/composables/useHealthcareServices';
 import { useAsyncState } from '@/composables/useAsyncState';
 defineOptions({ layout: Layout });
 
+const { context } = useHealthcare();
 const { plan } = useHealthcareServices();
 const state = useAsyncState((signal) => plan.list(signal));
 const busy = ref(false),
@@ -41,12 +42,19 @@ onMounted(state.run);
 <template>
     <PageHeader
         title="Planos e módulos"
-        description="Defina quais serviços cada plano demonstrativo disponibiliza."
+        :description="
+            context.demo
+                ? 'Defina quais serviços cada plano demonstrativo disponibiliza.'
+                : 'Defina quais serviços cada plano disponibiliza.'
+        "
     />
     <div class="sm-stack">
         <AppAlert>
-            As alterações valem apenas para a demonstração. O plano define os
-            módulos; a regulação municipal continua sendo respeitada.
+            <template v-if="context.demo">
+                As alterações valem apenas para a demonstração.
+            </template>
+            O plano define os módulos; a regulação municipal continua sendo
+            respeitada.
         </AppAlert>
         <AppAlert v-if="error" tone="danger">{{ error }}</AppAlert>
         <AsyncState

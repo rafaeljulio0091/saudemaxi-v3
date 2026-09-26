@@ -4,6 +4,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Healthcare\ConsultationController;
 use App\Http\Controllers\Healthcare\DemoController;
 use App\Http\Controllers\Healthcare\HealthcareDataController;
+use App\Http\Controllers\Healthcare\ManagerAreaController;
+use App\Http\Controllers\Healthcare\ManagerDataController;
 use App\Http\Controllers\Healthcare\PatientAreaController;
 use App\Http\Controllers\Healthcare\PatientController;
 use App\Http\Controllers\Healthcare\TriagePageController;
@@ -39,9 +41,10 @@ $pages = [
 // other entry in $pages keeps rendering the 503 placeholder below until it
 // gets the same treatment.
 $readyPatientPaths = ['orientacao', 'atendimento', 'agendamento', 'farmacia', 'consultas', 'nr1', 'conta', 'ajuda'];
+$readyManagerPaths = ['gestor/planos', 'gestor/identidade', 'gestor/integracao'];
 
 foreach ($pages as [$path, $page, $title, $profile, $module]) {
-    if (in_array($path, [...$readyPatientPaths, 'gestor/painel', 'gestor/pacientes', 'gestor/consultas'], true)) {
+    if (in_array($path, [...$readyPatientPaths, ...$readyManagerPaths, 'gestor/painel', 'gestor/pacientes', 'gestor/consultas'], true)) {
         // These pages are registered below with a real implementation.
         continue;
     }
@@ -91,7 +94,21 @@ Route::get('gestor/painel', [DashboardController::class, 'manager'])
     ->middleware(['auth', 'verified', EnsureUserHasRole::class.':manager'])
     ->name('healthcare.manager.dashboard');
 
-Route::middleware(['auth', 'verified', EnsureUserHasRole::class.':manager'])->group(function () {
+Route::middleware(['auth', 'verified', EnsureUserHasRole::class.':manager'])->group(function () use ($pages, $readyManagerPaths) {
+    foreach ($pages as [$path, $page, $title]) {
+        if (in_array($path, $readyManagerPaths, true)) {
+            Route::get($path, [ManagerAreaController::class, 'page'])
+                ->defaults('page', $page)->defaults('title', $title);
+        }
+    }
+
+    // Data endpoints for the real manager screens (apiBase of
+    // HealthcareContext::forManager), always scoped to the manager's tenant.
+    Route::get('gestor/dados/{resource}', [ManagerDataController::class, 'read'])
+        ->middleware('throttle:120,1,manager-read:');
+    Route::post('gestor/dados/{operation}', [ManagerDataController::class, 'execute'])
+        ->middleware('throttle:60,1,manager-operation:');
+
     Route::get('gestor/pacientes', [PatientController::class, 'index'])->name('healthcare.manager.patients');
     Route::post('gestor/pacientes', [PatientController::class, 'store'])->name('healthcare.manager.patients.store');
     Route::get('gestor/consultas', [ConsultationController::class, 'index'])->name('healthcare.manager.consultations');

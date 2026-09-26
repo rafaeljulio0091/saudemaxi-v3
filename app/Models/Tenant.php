@@ -21,6 +21,7 @@ class Tenant extends Model
         'name',
         'slug',
         'brand_color',
+        'greeting',
     ];
 
     /**
@@ -29,6 +30,14 @@ class Tenant extends Model
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
+    }
+
+    /**
+     * @return HasMany<Plan, $this>
+     */
+    public function plans(): HasMany
+    {
+        return $this->hasMany(Plan::class);
     }
 
     public function triageSessions(): HasMany

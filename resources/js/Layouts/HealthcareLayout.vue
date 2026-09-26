@@ -73,9 +73,19 @@ watch(
                     </span>
                     <span
                         class="sm-avatar"
-                        :aria-label="context.patient?.nome || 'Gestor'"
+                        :aria-label="
+                            context.patient?.nome ||
+                            context.manager?.nome ||
+                            'Gestor'
+                        "
                     >
-                        {{ initials(context.patient?.nome || 'Gestor Demo') }}
+                        {{
+                            initials(
+                                context.patient?.nome ||
+                                    context.manager?.nome ||
+                                    'Gestor Demo',
+                            )
+                        }}
                     </span>
                     <Link
                         v-if="!context.demo && page.props.auth?.user"

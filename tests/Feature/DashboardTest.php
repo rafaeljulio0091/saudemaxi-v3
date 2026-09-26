@@ -43,10 +43,23 @@ class DashboardTest extends TestCase
 
         $response->assertOk();
         $response->assertInertia(fn (Assert $page) => $page
-            ->component('Dashboard/Manager')
-            ->where('roleLabel', 'Gestor da clínica')
-            ->where('tenant.name', 'Prefeitura de Queimados')
+            ->component('Healthcare/Manager/Dashboard')
+            ->where('healthcare.demo', false)
+            ->where('healthcare.profile', 'manager')
+            ->where('healthcare.apiBase', '/gestor/dados')
+            ->where('healthcare.tenant.nome', 'Prefeitura de Queimados')
         );
+    }
+
+    public function test_manager_without_a_tenant_keeps_the_previous_explanatory_dashboard(): void
+    {
+        $manager = User::factory()->manager()->create(['tenant_id' => null]);
+
+        $this->actingAs($manager)->get('/gestor/painel')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Dashboard/Manager')
+                ->where('tenant', null));
     }
 
     public function test_patient_cannot_access_the_manager_dashboard(): void

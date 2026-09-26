@@ -83,7 +83,11 @@ async function save() {
                 />
                 <AppAlert v-if="error" tone="danger">{{ error }}</AppAlert>
                 <AppAlert v-if="saved" tone="success">
-                    Identidade atualizada na demonstração.
+                    {{
+                        context.demo
+                            ? 'Identidade atualizada na demonstração.'
+                            : 'Identidade atualizada.'
+                    }}
                 </AppAlert>
                 <div class="sm-row">
                     <AppButton type="submit" :busy="busy" :disabled="!valid">

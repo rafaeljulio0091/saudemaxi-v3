@@ -14,9 +14,13 @@ class TriagePageController extends Controller
     {
         abort_unless($request->user()->isPatient(), 403, 'Esta área é exclusiva para pacientes.');
 
-        return Inertia::render('Healthcare/Patient/Guidance', [
-            'healthcare' => $context->forPatient($request->user()),
+        $healthcare = $context->forPatient($request->user());
+        $blocked = ! ($healthcare['modules']['orientacao'] ?? false);
+
+        return Inertia::render($blocked ? 'Healthcare/Unavailable' : 'Healthcare/Patient/Guidance', [
+            'healthcare' => $healthcare,
             'title' => 'Orientação em saúde',
+            'reason' => $blocked ? 'Este serviço não está incluído no seu plano.' : null,
         ]);
     }
 }

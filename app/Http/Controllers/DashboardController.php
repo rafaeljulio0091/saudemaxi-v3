@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Concerns\SharesDashboardContext;
+use App\Services\Healthcare\HealthcareContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -28,9 +29,18 @@ class DashboardController extends Controller
     /**
      * Display the clinic manager dashboard.
      */
-    public function manager(Request $request): Response
+    public function manager(Request $request, HealthcareContext $context): Response
     {
-        return $this->render($request, 'Dashboard/Manager');
+        // Without a tenant there is nothing to manage yet: keep the previous
+        // screen, which explains that the user is not linked to a client.
+        if (! $request->user()->tenant) {
+            return $this->render($request, 'Dashboard/Manager');
+        }
+
+        return Inertia::render('Healthcare/Manager/Dashboard', [
+            'healthcare' => $context->forManager($request->user()),
+            'title' => 'Painel de gestão',
+        ]);
     }
 
     private function render(Request $request, string $component): Response

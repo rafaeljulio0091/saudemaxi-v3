@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { greeting } from '@/utils/healthcareFormat';
 import { useHealthcareUi } from '@/stores/healthcareUi';
 import Layout from '@/Layouts/HealthcareLayout.vue';
@@ -18,6 +18,10 @@ const { context, href } = useHealthcare();
 const { patient } = useHealthcareServices();
 const ui = useHealthcareUi();
 const state = useAsyncState((signal) => patient.dashboard(signal));
+const suffix = computed(() => (context.value.demo ? ' no cenário' : ''));
+const agesMax = computed(() =>
+    Math.max(1, ...(state.data.value?.ages || []).map((age) => age.v)),
+);
 onMounted(state.run);
 </script>
 <template>
@@ -25,10 +29,17 @@ onMounted(state.run);
         <section class="sm-hero sm-stack-sm">
             <p class="sm-kicker">Gestão do cuidado</p>
             <h1>{{ greeting() }}. Vamos olhar o dia?</h1>
-            <p>{{ context.tenant.nome }} · {{ context.tenant.tipo }}</p>
+            <p>
+                {{ context.tenant.nome }}
+                <template v-if="context.tenant.tipo">
+                    · {{ context.tenant.tipo }}
+                </template>
+            </p>
             <div class="sm-row">
                 <span class="sm-badge">Visão de operação</span>
-                <span class="sm-badge">Dados demonstrativos</span>
+                <span v-if="context.demo" class="sm-badge">
+                    Dados demonstrativos
+                </span>
             </div>
         </section>
         <AsyncState
@@ -57,8 +68,8 @@ onMounted(state.run);
             <div class="sm-grid sm-grid-4">
                 <AppCard
                     v-for="metric in [
-                        { key: 'patients', label: 'Pacientes no cenário' },
-                        { key: 'consultations', label: 'Consultas no cenário' },
+                        { key: 'patients', label: 'Pacientes' + suffix },
+                        { key: 'consultations', label: 'Consultas' + suffix },
                         { key: 'scheduled', label: 'Agendamentos' },
                         { key: 'unpaid', label: 'Pagamentos em aberto' },
                     ]"
@@ -66,11 +77,18 @@ onMounted(state.run);
                 >
                     <p class="sm-muted sm-small">{{ metric.label }}</p>
                     <p class="sm-stat">
-                        {{ state.data.value[metric.key] }}
+                        {{ state.data.value[metric.key] ?? '—' }}
                     </p>
                 </AppCard>
             </div>
-            <AppCard>
+            <AppCard v-if="!context.demo">
+                <p class="sm-muted">
+                    Consultas, agendamentos, pagamentos e indicadores do período
+                    ainda não têm fonte oficial neste ambiente e não são
+                    exibidos.
+                </p>
+            </AppCard>
+            <AppCard v-if="state.data.value.indicators">
                 <h2>Indicadores ilustrativos do período</h2>
                 <p class="sm-small sm-muted">
                     Os gráficos abaixo são amostras fictícias do protótipo,
@@ -107,7 +125,7 @@ onMounted(state.run);
                 </div>
             </AppCard>
             <div class="sm-grid">
-                <AppCard>
+                <AppCard v-if="state.data.value.days">
                     <h2>Consultas por dia da semana</h2>
                     <div class="sm-stack-sm">
                         <div
@@ -142,7 +160,7 @@ onMounted(state.run);
                             <div class="sm-bar" aria-hidden="true">
                                 <span
                                     :style="{
-                                        width: (age.v / 118) * 100 + '%',
+                                        width: (age.v / agesMax) * 100 + '%',
                                     }"
                                 />
                             </div>
@@ -150,7 +168,7 @@ onMounted(state.run);
                     </div>
                 </AppCard>
             </div>
-            <AppCard>
+            <AppCard v-if="state.data.value.hours">
                 <h2>Consultas por hora</h2>
                 <div class="sm-hour-chart">
                     <div
@@ -182,7 +200,7 @@ onMounted(state.run);
                 </details>
             </AppCard>
         </AsyncState>
-        <AppCard class="sm-max-invite">
+        <AppCard v-if="context.demo" class="sm-max-invite">
             <div class="sm-row">
                 <div class="sm-grow">
                     <h2>MAX ajuda a encontrar o que precisa</h2>

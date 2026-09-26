@@ -2,13 +2,18 @@
 
 namespace App\Http\Requests\Triage;
 
+use App\Services\Healthcare\TenantPlanService;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StartTriageSessionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->isPatient() === true && $this->user()->tenant_id !== null;
+        $user = $this->user();
+
+        return $user?->isPatient() === true
+            && $user->tenant !== null
+            && app(TenantPlanService::class)->effectivePlan($user->tenant)['modules']['orientacao'];
     }
 
     public function rules(): array

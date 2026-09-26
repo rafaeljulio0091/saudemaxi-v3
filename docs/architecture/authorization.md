@@ -36,3 +36,14 @@
 `app/Policies/TriageSessionPolicy.php`, `app/Http/Requests/**`,
 `app/Http/Controllers/Triage/**` e testes `TriageTest`,
 `HealthcarePatientAreaTest`, `PatientsTest` e `ConsultationsTest`.
+
+## Área real do gestor
+
+- `/gestor/painel`, `/gestor/planos`, `/gestor/identidade` e `/gestor/integracao`
+  usam `HealthcareContext::forManager` (gestor sem tenant → 403; no painel, a
+  tela explicativa anterior é mantida).
+- `/gestor/dados/{resource}` e `/gestor/dados/{operation}` exigem papel
+  `manager`, derivam o tenant da sessão e validam cada operação; plano de outro
+  tenant retorna 404 e o módulo `nr1` não pode ser alterado.
+- Os módulos do plano são aplicados no servidor às páginas do paciente, ao
+  início da triagem (`orientacao`) e às receitas (`farmacia`).

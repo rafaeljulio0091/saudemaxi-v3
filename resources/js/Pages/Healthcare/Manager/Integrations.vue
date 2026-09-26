@@ -12,6 +12,7 @@ import { useHealthcareServices } from '@/composables/useHealthcareServices';
 import { useAsyncState } from '@/composables/useAsyncState';
 defineOptions({ layout: Layout });
 
+const { context } = useHealthcare();
 const labels = {
     documented: 'Documentado, não conectado',
     pending: 'Aguarda definição',
@@ -26,8 +27,10 @@ const labels = {
     />
     <div class="sm-stack">
         <AppAlert tone="warning">
-            Nenhuma conexão real está ativa nesta demonstração. A homologação
-            depende de credenciais e ambiente do fornecedor.
+            <template v-if="context.demo">
+                Nenhuma conexão real está ativa nesta demonstração.
+            </template>
+            A homologação depende de credenciais e ambiente do fornecedor.
         </AppAlert>
         <div class="sm-grid sm-grid-4">
             <AppCard v-for="(label, key) in labels" :key="key">

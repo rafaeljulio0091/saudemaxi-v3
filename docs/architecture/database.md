@@ -32,3 +32,12 @@
 ## Arquivos principais
 
 `database/migrations/*.php` e os modelos em `app/Models`.
+
+## Planos e identidade do tenant
+
+- `plans` (tenant_id, name, max_dependents, modules JSON, is_default) é a
+  camada local "Módulos do plano" da Saúde Maxi, não uma entidade LSX.
+  Todo paciente do tenant usa o plano padrão; sem plano gravado valem os
+  módulos padrão de `TenantPlanService` (todos habilitados).
+- `tenants.greeting` guarda a saudação editada em `/gestor/identidade`.
+- Atribuição de plano por paciente ainda não existe (`NEEDS_VERIFICATION`).

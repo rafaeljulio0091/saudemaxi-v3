@@ -26,12 +26,19 @@ class HealthcareDataService
         'max' => 'O assistente MAX ainda não está configurado para esta conta.',
     ];
 
-    public function __construct(private LsxMedicalConsultationClient $consultations) {}
+    public function __construct(
+        private LsxMedicalConsultationClient $consultations,
+        private TenantPlanService $plans,
+    ) {}
 
     public function read(User $user, string $resource, ?string $id = null): mixed
     {
         if (array_key_exists($resource, self::PENDING_INTEGRATION)) {
             abort(503, self::PENDING_INTEGRATION[$resource]);
+        }
+
+        if ($resource === 'prescriptions') {
+            $this->ensureModule($user, 'farmacia');
         }
 
         return match ($resource) {
@@ -49,6 +56,10 @@ class HealthcareDataService
     {
         if (array_key_exists($operation, self::PENDING_INTEGRATION)) {
             abort(503, self::PENDING_INTEGRATION[$operation]);
+        }
+
+        if ($operation === 'photo') {
+            $this->ensureModule($user, 'farmacia');
         }
 
         return match ($operation) {
@@ -129,6 +140,16 @@ class HealthcareDataService
             'nascimento' => $user->birthdate?->format('Y-m-d'),
             'dependentes' => null,
         ];
+    }
+
+    /**
+     * Server-side counterpart of the plan module gate PatientAreaController
+     * applies to the pages.
+     */
+    private function ensureModule(User $user, string $module): void
+    {
+        $this->ensurePatientWithTenant($user);
+        abort_unless($this->plans->effectivePlan($user->tenant)['modules'][$module] ?? false, 403, 'Este serviço não está incluído no seu plano.');
     }
 
     /**
