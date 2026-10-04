@@ -7,11 +7,16 @@
 - `LsxMedicalAuthClient` chama `/api/clinic/patients/authenticate` com Bearer
   server-side, timeout de 10 segundos por padrão e credenciais apenas no corpo
   da requisição.
-- `LsxMedicalPatientClient` implementa busca e criação de pacientes.
+- `LsxMedicalPatientClient` continua disponível como cliente complementar,
+  mas a tela e o cadastro de pacientes usam o banco local e não o chamam.
 - `LsxMedicalConsultationClient` implementa apenas histórico de consultas,
   exige CPF e o envia somente com dígitos. Na área do paciente
   (`POST /triagem/consultations-search`) o CPF vem sempre da conta logada,
   os filtros são validados e paciente sem tenant recebe 403.
+- Na área do gestor, CPF e filtros são enviados ao Laravel por
+  `POST /gestor/dados/consultations-search`, nunca em URL do browser. O gestor
+  precisa ter tenant. O Laravel usa query string apenas na chamada
+  server-to-server porque esse é o contrato documentado da LSX.
 - Falhas de conexão não registram a mensagem da exceção, pois ela contém a URL
   com CPF na query string.
 - `MakesTelemedicineRequests` centraliza URL, token, timeout e conversão de
@@ -21,6 +26,9 @@
 - Não há cliente de webhook, prescrição retornada, especialidades, horários,
   médicos, agendamento ou vídeo no código atual; `HealthcareDataService`
   retorna 503 honesto para esses recursos pendentes.
+- Não há sincronização automática entre o cadastro nativo e a LSX. O mapeamento
+  e a reconciliação exigem contrato homologado e permanecem
+  `NEEDS_VERIFICATION`.
 
 ## Invariantes
 

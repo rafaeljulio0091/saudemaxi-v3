@@ -21,6 +21,9 @@ const { context } = useHealthcare();
 const { appointment } = useHealthcareServices();
 const search = ref(''),
     status = ref(''),
+    doctorCpf = ref(''),
+    startDateMin = ref(''),
+    startDateMax = ref(''),
     page = ref(1),
     selected = ref(null),
     busy = ref(false),
@@ -30,6 +33,9 @@ const state = useAsyncState((signal) =>
         {
             search: search.value,
             status: status.value,
+            doctor_cpf: doctorCpf.value,
+            start_date_min: startDateMin.value,
+            start_date_max: startDateMax.value,
             page: page.value,
             per_page: 10,
         },
@@ -38,7 +44,7 @@ const state = useAsyncState((signal) =>
 );
 const rows = computed(() => state.data.value?.results || []);
 let debounce;
-watch([search, status], () => {
+watch([search, status, doctorCpf, startDateMin, startDateMax], () => {
     clearTimeout(debounce);
     debounce = setTimeout(() => {
         if (page.value !== 1) page.value = 1;
@@ -80,7 +86,16 @@ onMounted(state.run);
                     id="consultation-search"
                     v-model="search"
                     type="search"
-                    label="Buscar por código, especialidade ou profissional"
+                    :label="
+                        context.profile === 'manager'
+                            ? 'CPF do paciente'
+                            : 'Buscar por código, especialidade ou profissional'
+                    "
+                    :placeholder="
+                        context.profile === 'manager'
+                            ? '000.000.000-00'
+                            : undefined
+                    "
                 />
                 <div class="sm-field">
                     <label for="consultation-status">Situação</label>
@@ -95,6 +110,26 @@ onMounted(state.run);
                         </option>
                     </select>
                 </div>
+                <template v-if="context.profile === 'manager'">
+                    <AppField
+                        id="consultation-doctor-cpf"
+                        v-model="doctorCpf"
+                        label="CPF do profissional"
+                        placeholder="000.000.000-00"
+                    />
+                    <AppField
+                        id="consultation-start-min"
+                        v-model="startDateMin"
+                        label="Data inicial"
+                        type="date"
+                    />
+                    <AppField
+                        id="consultation-start-max"
+                        v-model="startDateMax"
+                        label="Data final"
+                        type="date"
+                    />
+                </template>
             </div>
         </AppCard>
         <AsyncState

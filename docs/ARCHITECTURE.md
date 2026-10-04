@@ -36,6 +36,7 @@ Browser
 - [Frontend](architecture/frontend.md)
 - [Banco de dados](architecture/database.md)
 - [Telemedicina](architecture/telemedicine.md)
+- [Cadastro nativo de saúde](architecture/native-healthcare-registry.md)
 - [Outras integrações](architecture/integrations.md)
 
 ## Limites confirmados
@@ -47,8 +48,9 @@ Browser
 - O fluxo de agendamento, especialidades, médicos, horários e vídeo ainda é
   explicitamente marcado como integração pendente em
   `HealthcareDataService`.
-- A aplicação possui migrações para tenant, triagem e prescrições, mas não há
-  um mecanismo global de escopo de tenant.
+- A aplicação possui cadastro nativo de pacientes e diretório de saúde. O
+  acesso novo usa `TenantContext`, Policies e Services com queries escopadas;
+  ainda não existe global scope de tenant para todo o código legado.
 
 Pontos não comprovados no código devem permanecer marcados como
 `NEEDS_VERIFICATION` nos documentos específicos.

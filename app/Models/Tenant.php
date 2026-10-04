@@ -44,4 +44,34 @@ class Tenant extends Model
     {
         return $this->hasMany(TriageSession::class);
     }
+
+    public function municipalities(): HasMany
+    {
+        return $this->hasMany(Municipality::class);
+    }
+
+    public function organizations(): HasMany
+    {
+        return $this->hasMany(Organization::class);
+    }
+
+    public function healthUnits(): HasMany
+    {
+        return $this->hasMany(HealthUnit::class);
+    }
+
+    public function patients(): HasMany
+    {
+        return $this->hasMany(Patient::class);
+    }
+
+    public function healthProfessionals(): HasMany
+    {
+        return $this->hasMany(HealthProfessional::class);
+    }
+
+    public function pharmacies(): HasMany
+    {
+        return $this->hasMany(Pharmacy::class);
+    }
 }

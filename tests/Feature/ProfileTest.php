@@ -29,6 +29,7 @@ class ProfileTest extends TestCase
         $user = User::factory()->create([
             'name' => 'Antônio Ribeiro da Silva',
             'tenant_id' => $tenant->id,
+            'cpf' => '52998224725',
         ]);
 
         $response = $this->actingAs($user)->get('/profile');
@@ -38,6 +39,10 @@ class ProfileTest extends TestCase
             ->component('Profile/Edit')
             ->where('roleLabel', 'Paciente')
             ->where('tenant.name', 'Prefeitura de Queimados')
+            ->where('auth.user.name', 'Antônio Ribeiro da Silva')
+            ->missing('auth.user.cpf')
+            ->missing('auth.user.tenant_id')
+            ->missing('auth.user.uuid')
         );
     }
 

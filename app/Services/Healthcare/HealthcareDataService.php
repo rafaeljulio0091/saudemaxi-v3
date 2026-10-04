@@ -94,6 +94,46 @@ class HealthcareDataService
         ];
     }
 
+    /**
+     * Manager lookup keeps patient CPF in an authenticated POST body. Tenant
+     * access is established locally before the server-side provider call.
+     *
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
+    public function searchConsultationsForManager(User $manager, array $input): array
+    {
+        $manager->loadMissing('tenant');
+        abort_unless($manager->isManager() && $manager->tenant, 403, 'Gestor sem vínculo com um cliente.');
+
+        if (empty($input['search'])) {
+            return ['count' => 0, 'results' => [], 'page' => 1, 'per_page' => 0];
+        }
+
+        $page = (int) ($input['page'] ?? 1);
+
+        try {
+            $result = $this->consultations->search([
+                'cpf' => $input['search'],
+                'status' => $input['status'] ?? null,
+                'doctor_cpf' => $input['doctor_cpf'] ?? null,
+                'start_date_min' => $input['start_date_min'] ?? null,
+                'start_date_max' => $input['start_date_max'] ?? null,
+                'page' => $page,
+            ]);
+        } catch (TelemedicineApiException $e) {
+            report($e);
+            abort(503, $e->getMessage());
+        }
+
+        return [
+            'count' => $result['count'],
+            'results' => array_map(fn (array $row) => $this->presentConsultation($row), $result['results']),
+            'page' => $page,
+            'per_page' => count($result['results']),
+        ];
+    }
+
     private function account(User $user): array
     {
         $this->ensurePatientWithTenant($user);

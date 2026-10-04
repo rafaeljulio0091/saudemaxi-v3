@@ -10,6 +10,7 @@ use App\Http\Controllers\Healthcare\MaxMessageController;
 use App\Http\Controllers\Healthcare\PatientAreaController;
 use App\Http\Controllers\Healthcare\PatientController;
 use App\Http\Controllers\Healthcare\TriagePageController;
+use App\Http\Controllers\Native\NativeRegistryController;
 use App\Http\Controllers\Triage\TriageMessageController;
 use App\Http\Controllers\Triage\TriageSessionController;
 use App\Http\Middleware\EnsureHealthcareDemo;
@@ -45,7 +46,7 @@ $readyPatientPaths = ['orientacao', 'atendimento', 'agendamento', 'farmacia', 'c
 $readyManagerPaths = ['gestor/planos', 'gestor/identidade', 'gestor/integracao'];
 
 foreach ($pages as [$path, $page, $title, $profile, $module]) {
-    if (in_array($path, [...$readyPatientPaths, ...$readyManagerPaths, 'gestor/painel', 'gestor/pacientes', 'gestor/consultas'], true)) {
+    if (in_array($path, [...$readyPatientPaths, ...$readyManagerPaths, 'gestor/painel', 'gestor/pacientes', 'gestor/pacientes/{id}', 'gestor/consultas'], true)) {
         // These pages are registered below with a real implementation.
         continue;
     }
@@ -108,8 +109,44 @@ Route::middleware(['auth', 'verified', EnsureUserHasRole::class.':manager'])->gr
         }
     }
 
+    Route::get('gestor/pacientes', [ManagerAreaController::class, 'page'])
+        ->defaults('page', 'Manager/Patients')->defaults('title', 'Pacientes')
+        ->name('healthcare.manager.patients');
+    Route::get('gestor/pacientes/{id}', [ManagerAreaController::class, 'page'])
+        ->whereUuid('id')
+        ->defaults('page', 'Manager/Patient')->defaults('title', 'Ficha do paciente');
+    Route::post('gestor/pacientes', [PatientController::class, 'store'])
+        ->middleware('throttle:sensitive-registry')
+        ->name('healthcare.manager.patients.store');
+    Route::post('gestor/dados/patients-search', [PatientController::class, 'search'])
+        ->middleware('throttle:sensitive-registry');
+    Route::post('gestor/dados/consultations-search', [ConsultationController::class, 'search'])
+        ->middleware('throttle:sensitive-registry');
+    Route::post('gestor/dados/create-patient', [PatientController::class, 'storeJson'])
+        ->middleware('throttle:sensitive-registry');
+    Route::post('gestor/dados/patient', [PatientController::class, 'updateFromPayload'])
+        ->middleware('throttle:sensitive-registry');
+    Route::get('gestor/dados/patient/{nativePatient}', [PatientController::class, 'show'])
+        ->whereUuid('nativePatient');
+    Route::patch('gestor/dados/patient/{nativePatient}', [PatientController::class, 'update'])
+        ->whereUuid('nativePatient')->middleware('throttle:sensitive-registry');
+    Route::delete('gestor/dados/patient/{nativePatient}', [PatientController::class, 'destroy'])
+        ->whereUuid('nativePatient')->middleware('throttle:sensitive-registry');
+    Route::post('gestor/dados/patient/{nativePatient}/restore', [PatientController::class, 'restore'])
+        ->whereUuid('nativePatient')->middleware('throttle:sensitive-registry');
+
+    Route::prefix('gestor/cadastros')->middleware('throttle:sensitive-registry')->group(function () {
+        Route::post('municipios', [NativeRegistryController::class, 'municipality']);
+        Route::post('organizacoes', [NativeRegistryController::class, 'organization']);
+        Route::post('unidades-saude', [NativeRegistryController::class, 'healthUnit']);
+        Route::post('farmacias', [NativeRegistryController::class, 'pharmacy']);
+        Route::post('profissionais-saude', [NativeRegistryController::class, 'healthProfessional']);
+    });
+
     // Data endpoints for the real manager screens (apiBase of
     // HealthcareContext::forManager), always scoped to the manager's tenant.
+    // Specific sensitive routes above must be registered before these generic
+    // operations so validation and policies cannot be bypassed.
     Route::get('gestor/dados/{resource}', [ManagerDataController::class, 'read'])
         ->middleware('throttle:120,1,manager-read:');
     Route::post('gestor/dados/max', MaxMessageController::class)
@@ -118,9 +155,9 @@ Route::middleware(['auth', 'verified', EnsureUserHasRole::class.':manager'])->gr
     Route::post('gestor/dados/{operation}', [ManagerDataController::class, 'execute'])
         ->middleware('throttle:60,1,manager-operation:');
 
-    Route::get('gestor/pacientes', [PatientController::class, 'index'])->name('healthcare.manager.patients');
-    Route::post('gestor/pacientes', [PatientController::class, 'store'])->name('healthcare.manager.patients.store');
-    Route::get('gestor/consultas', [ConsultationController::class, 'index'])->name('healthcare.manager.consultations');
+    Route::get('gestor/consultas', [ManagerAreaController::class, 'page'])
+        ->defaults('page', 'Shared/Consultations')->defaults('title', 'Consultas')
+        ->name('healthcare.manager.consultations');
 });
 
 Route::prefix('demonstracao')->middleware(EnsureHealthcareDemo::class)->group(function () use ($pages) {

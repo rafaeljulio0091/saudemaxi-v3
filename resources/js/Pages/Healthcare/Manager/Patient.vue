@@ -14,7 +14,7 @@ import { useAsyncState } from '@/composables/useAsyncState';
 defineOptions({ layout: Layout });
 
 const props = defineProps({ recordId: String });
-const { patient, plan } = useHealthcareServices();
+const { patient } = useHealthcareServices();
 const { href } = useHealthcare();
 const form = reactive({}),
     busy = ref(false),
@@ -24,12 +24,10 @@ const state = useAsyncState(async (signal) => {
     const record = await patient.find(props.recordId, signal);
     Object.assign(form, {
         id: record.id,
-        nome: record.nome,
-        email: record.email,
-        telefone: record.telefone,
-        planoId: record.planoId,
+        name: record.name,
+        social_name: record.social_name,
     });
-    return { record, plans: await plan.list(signal) };
+    return { record };
 });
 async function save() {
     if (busy.value) return;
@@ -40,7 +38,9 @@ async function save() {
         state.data.value.record = await patient.update(form);
         saved.value = true;
     } catch (e) {
-        error.value = e.userMessage;
+        error.value =
+            Object.values(e.response?.data?.errors || {})[0]?.[0] ||
+            e.userMessage;
     } finally {
         busy.value = false;
     }
@@ -73,38 +73,20 @@ onMounted(state.run);
                     <AppField
                         id="edit-name"
                         label="Nome completo"
-                        v-model="form.nome"
+                        v-model="form.name"
                         required
                     />
                     <AppField
-                        id="edit-email"
-                        label="E-mail"
-                        v-model="form.email"
-                        type="email"
+                        id="edit-social-name"
+                        label="Nome social"
+                        v-model="form.social_name"
                     />
-                    <AppField
-                        id="edit-phone"
-                        label="Telefone"
-                        v-model="form.telefone"
-                    />
-                    <div class="sm-field">
-                        <label for="edit-plan">Plano</label>
-                        <select id="edit-plan" v-model="form.planoId">
-                            <option
-                                v-for="item in state.data.value.plans"
-                                :key="item.id"
-                                :value="item.id"
-                            >
-                                {{ item.nome }}
-                            </option>
-                        </select>
-                    </div>
                     <AppAlert v-if="error" tone="danger">{{ error }}</AppAlert>
                     <AppAlert v-if="saved" tone="success">
-                        Cadastro demonstrativo atualizado.
+                        Cadastro atualizado.
                     </AppAlert>
                     <AppButton type="submit" :busy="busy">
-                        Salvar dados demonstrativos
+                        Salvar dados
                     </AppButton>
                 </form>
             </AppCard>
@@ -113,9 +95,10 @@ onMounted(state.run);
                     <h2>Cadastro</h2>
                     <p>
                         Nascimento:
-                        {{ date(state.data.value.record.nascimento) }}
+                        {{ date(state.data.value.record.birth_date) }}
                     </p>
-                    <p>Adesão: {{ date(state.data.value.record.adesao) }}</p>
+                    <p>E-mail: {{ state.data.value.record.email || '-' }}</p>
+                    <p>Telefone: {{ state.data.value.record.phone || '-' }}</p>
                     <p>
                         Situação:
                         {{
@@ -124,15 +107,6 @@ onMounted(state.run);
                                 : 'Inativo'
                         }}
                     </p>
-                    <div class="sm-row sm-mt">
-                        <span
-                            v-for="tag in state.data.value.record.tags"
-                            :key="tag"
-                            class="sm-badge"
-                        >
-                            {{ tag }}
-                        </span>
-                    </div>
                 </AppCard>
                 <AppAlert>
                     A inativação depende de uma permissão específica da

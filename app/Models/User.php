@@ -3,18 +3,21 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\RecordStatus;
 use App\Enums\UserRole;
+use App\Models\Concerns\HasPublicUuid;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, HasPublicUuid, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -25,8 +28,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
-        'tenant_id',
         'phone',
         'birthdate',
     ];
@@ -39,6 +40,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'tenant_id',
+        'cpf',
     ];
 
     /**
@@ -52,7 +55,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'status' => RecordStatus::class,
             'birthdate' => 'date:Y-m-d',
+            'last_login_at' => 'datetime',
         ];
     }
 
@@ -82,5 +87,15 @@ class User extends Authenticatable
     public function prescriptions(): HasMany
     {
         return $this->hasMany(Prescription::class, 'patient_id');
+    }
+
+    public function patientProfile(): HasOne
+    {
+        return $this->hasOne(Patient::class);
+    }
+
+    public function healthProfessional(): HasOne
+    {
+        return $this->hasOne(HealthProfessional::class);
     }
 }

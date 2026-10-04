@@ -27,14 +27,13 @@ class HealthcareContext
             'profile' => 'patient',
             'tenant' => $this->presentTenant($tenant),
             'patient' => [
-                'id' => $patient->id,
+                'id' => $patient->uuid,
                 'nome' => $patient->name,
-                'cpf' => $patient->cpf,
             ],
             'plan' => ['nome' => $plan['nome'], 'maxDependentes' => $plan['maxDependentes']],
             'modules' => $plan['modules'],
             'network' => 'normal',
-            'key' => "{$tenant->id}:patient:{$patient->id}",
+            'key' => "{$tenant->slug}:patient:{$patient->uuid}",
             'basePath' => '',
             'apiBase' => '/triagem',
         ];
@@ -63,7 +62,7 @@ class HealthcareContext
             'plan' => ['nome' => $plan['nome'], 'maxDependentes' => $plan['maxDependentes']],
             'modules' => $plan['modules'],
             'network' => 'normal',
-            'key' => "{$tenant->id}:manager:{$manager->id}",
+            'key' => "{$tenant->slug}:manager:{$manager->uuid}",
             'basePath' => '',
             'apiBase' => '/gestor/dados',
         ];

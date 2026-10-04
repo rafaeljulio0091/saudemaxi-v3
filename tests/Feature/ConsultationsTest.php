@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -12,117 +13,113 @@ class ConsultationsTest extends TestCase
 {
     use RefreshDatabase;
 
+    private function manager(): User
+    {
+        return User::factory()->manager()->create([
+            'tenant_id' => Tenant::factory()->create()->id,
+        ]);
+    }
+
     public function test_guests_are_redirected_to_login(): void
     {
         $this->get('/gestor/consultas')->assertRedirect(route('login'));
     }
 
-    public function test_patient_cannot_access_the_manager_consultations_page(): void
+    public function test_patient_and_manager_without_tenant_cannot_access_manager_consultations(): void
     {
-        $user = User::factory()->create();
+        $patient = User::factory()->create(['tenant_id' => Tenant::factory()->create()->id]);
+        $orphanManager = User::factory()->manager()->create(['tenant_id' => null]);
 
-        $this->actingAs($user)->get('/gestor/consultas')->assertForbidden();
+        $this->actingAs($patient)->get('/gestor/consultas')->assertForbidden();
+        $this->actingAs($orphanManager)->get('/gestor/consultas')->assertForbidden();
+        $this->actingAs($orphanManager)->postJson('/gestor/dados/consultations-search')->assertForbidden();
     }
 
-    public function test_manager_sees_an_empty_prompt_without_a_cpf_and_never_calls_the_provider(): void
+    public function test_manager_page_does_not_put_cpf_in_the_url_or_call_provider(): void
     {
-        $manager = User::factory()->manager()->create();
-
+        $manager = $this->manager();
         Http::fake();
 
-        $response = $this->actingAs($manager)->get('/gestor/consultas');
-
-        $response->assertOk();
-        $response->assertInertia(fn (Assert $page) => $page
-            ->component('Manager/Consultations')
-            ->where('consultations.count', 0)
-            ->where('consultations.results', [])
-        );
+        $this->actingAs($manager)->get('/gestor/consultas?cpf=52998224725')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Healthcare/Shared/Consultations')
+                ->where('healthcare.profile', 'manager')
+                ->missing('filters'));
 
         Http::assertNothingSent();
     }
 
-    public function test_manager_sees_consultation_history_for_a_given_cpf(): void
+    public function test_manager_searches_consultations_with_cpf_in_post_body(): void
     {
-        $manager = User::factory()->manager()->create();
-
+        $manager = $this->manager();
         Http::fake([
             '*/api/clinic/consultation-history/*' => Http::response([
                 'count' => 1,
-                'next' => null,
-                'previous' => null,
-                'results' => [
-                    ['code' => 'CN-1234', 'status' => 'FINISHED', 'specialty' => 'Clínica médica'],
-                ],
-            ], 200),
+                'results' => [[
+                    'code' => 'CN-1234',
+                    'status' => 'FINISHED',
+                    'specialty' => 'Clínica médica',
+                    'doctor_name' => 'Dra. Ana',
+                ]],
+            ]),
         ]);
 
-        $response = $this->actingAs($manager)->get('/gestor/consultas?cpf=12345678901');
-
-        $response->assertOk();
-        $response->assertInertia(fn (Assert $page) => $page
-            ->component('Manager/Consultations')
-            ->where('consultations.count', 1)
-            ->where('consultations.results.0.code', 'CN-1234')
-            ->where('error', null)
-        );
-
-        Http::assertSent(function ($request) {
-            return str_contains($request->url(), '/api/clinic/consultation-history/')
-                && $request['cpf'] === '12345678901'
-                && $request->hasHeader('Authorization');
-        });
-    }
-
-    public function test_filters_are_forwarded_to_the_provider(): void
-    {
-        $manager = User::factory()->manager()->create();
-
-        Http::fake([
-            '*/api/clinic/consultation-history/*' => Http::response(['count' => 0, 'results' => []], 200),
-        ]);
-
-        $this->actingAs($manager)->get('/gestor/consultas?'.http_build_query([
-            'cpf' => '12345678901',
+        $this->actingAs($manager)->postJson('/gestor/dados/consultations-search', [
+            'search' => '529.982.247-25',
             'status' => 'FINISHED',
-            'doctor_cpf' => '98765432100',
+            'doctor_cpf' => '529.982.247-25',
             'start_date_min' => '2024-01-01',
             'start_date_max' => '2024-12-31',
-        ]));
+            'page' => 1,
+        ])->assertOk()
+            ->assertJsonPath('count', 1)
+            ->assertJsonPath('results.0.codigo', 'CN-1234')
+            ->assertJsonPath('results.0.medico', 'Dra. Ana');
 
-        Http::assertSent(function ($request) {
-            return $request['status'] === 'FINISHED'
-                && $request['doctor_cpf'] === '98765432100'
-                && $request['start_date_min'] === '2024-01-01'
-                && $request['start_date_max'] === '2024-12-31';
-        });
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/api/clinic/consultation-history/')
+            && $request['cpf'] === '52998224725'
+            && $request['status'] === 'FINISHED'
+            && $request['doctor_cpf'] === '52998224725'
+            && $request['start_date_min'] === '2024-01-01'
+            && $request['start_date_max'] === '2024-12-31'
+            && $request->hasHeader('Authorization'));
     }
 
-    public function test_consultations_page_shows_an_honest_error_when_the_provider_is_unavailable(): void
+    public function test_empty_search_never_calls_provider(): void
     {
-        $manager = User::factory()->manager()->create();
+        $manager = $this->manager();
+        Http::fake();
 
-        Http::fake([
-            '*/api/clinic/consultation-history/*' => Http::response(null, 500),
-        ]);
+        $this->actingAs($manager)->postJson('/gestor/dados/consultations-search', [])
+            ->assertOk()->assertJsonPath('count', 0)->assertJsonPath('results', []);
 
-        $response = $this->actingAs($manager)->get('/gestor/consultas?cpf=12345678901');
-
-        $response->assertOk();
-        $response->assertInertia(fn (Assert $page) => $page
-            ->component('Manager/Consultations')
-            ->where('consultations.count', 0)
-            ->where('consultations.results', [])
-            ->has('error')
-        );
+        Http::assertNothingSent();
     }
 
-    public function test_invalid_status_filter_is_rejected(): void
+    public function test_provider_failure_is_reported_without_exposing_payload(): void
     {
-        $manager = User::factory()->manager()->create();
+        $manager = $this->manager();
+        Http::fake(['*/api/clinic/consultation-history/*' => Http::response(null, 500)]);
 
-        $response = $this->actingAs($manager)->get('/gestor/consultas?cpf=12345678901&status=NOT_A_STATUS');
+        $this->actingAs($manager)->postJson('/gestor/dados/consultations-search', [
+            'search' => '52998224725',
+        ])->assertStatus(503)
+            ->assertJsonMissing(['search' => '52998224725']);
+    }
 
-        $response->assertSessionHasErrors('status');
+    public function test_sensitive_filters_are_validated_and_tenant_is_prohibited(): void
+    {
+        $manager = $this->manager();
+        Http::fake();
+
+        $this->actingAs($manager)->postJson('/gestor/dados/consultations-search', [
+            'search' => '12345678901',
+            'status' => 'NOT_A_STATUS',
+            'tenant_id' => Tenant::factory()->create()->id,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['search', 'status', 'tenant_id']);
+
+        Http::assertNothingSent();
     }
 }

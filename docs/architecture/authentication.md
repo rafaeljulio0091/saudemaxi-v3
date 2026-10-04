@@ -12,11 +12,16 @@
   `LsxMedicalAuthenticator`.
 - Depois do login a sessão é regenerada. No logout ela é invalidada e o token
   CSRF é regenerado (`AuthenticatedSessionController`).
+- Logins bem-sucedidos registram `users.last_login_at` depois da regeneração
+  da sessão.
 - A sessão usa o driver `database` por padrão (`config/session.php`), com
   cookie HTTP-only e SameSite `lax` por padrão. `secure`, domínio, duração e
   criptografia dependem do ambiente.
 - CSRF é fornecido pelo middleware web padrão do Laravel. A confirmação de
   senha guarda `auth.password_confirmed_at` na sessão.
+- As props globais do Inertia expõem somente nome, e-mail, telefone,
+  nascimento, verificação e papel. CPF, tenant_id, UUID e estado interno não
+  são serializados automaticamente para o browser.
 - O login local limita cinco tentativas por combinação de e-mail
   transliterado e IP. Verificação de e-mail e envio de notificação usam
   `throttle:6,1`; o broker de reset tem throttle de 60 segundos.
@@ -41,8 +46,8 @@ server-side para o endpoint configurado. O token da clínica vem de
 - Usuários novos criados no registro local e pelo login LSX não recebem
   `tenant_id` ou uma regra de associação explícita no código. A consequência
   de produto e provisionamento é `NEEDS_VERIFICATION`.
-- `LsxMedicalAuthClient` registra a mensagem de `ConnectionException`; revisar
-  redaction antes de ampliar telemetria.
+- Falhas de conexão do login LSX registram somente o evento estruturado, sem
+  mensagem de exceção, URL, credencial ou payload.
 - Não há evidência no código de MFA, rotação adicional de sessão ou política
   de expiração além da configuração Laravel.
 

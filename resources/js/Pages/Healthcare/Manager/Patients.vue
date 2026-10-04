@@ -22,44 +22,50 @@ import { useHealthcareServices } from '@/composables/useHealthcareServices';
 import { useAsyncState } from '@/composables/useAsyncState';
 defineOptions({ layout: Layout });
 
-const { patient, plan } = useHealthcareServices();
+const { patient } = useHealthcareServices();
 const { href } = useHealthcare();
 const search = ref(''),
     status = ref(''),
     holder = ref(''),
-    planId = ref(''),
     page = ref(1),
     open = ref(false),
     busy = ref(false),
-    error = ref('');
+    error = ref(''),
+    success = ref('');
 const form = reactive({
-    nome: '',
+    name: '',
+    social_name: '',
+    cpf: '',
+    cns: '',
     email: '',
-    telefone: '',
-    nascimento: '',
-    planoId: null,
+    phone: '',
+    birth_date: '',
+    holder_cpf: '',
+    address: {
+        street: '',
+        number: '',
+        complement: '',
+        neighborhood: '',
+        city: '',
+        state: '',
+        zip_code: '',
+    },
 });
-const plans = ref([]);
 const state = useAsyncState((signal) =>
     patient.list(
         {
             search: search.value,
             status: status.value,
             holder: holder.value,
-            plan_id: planId.value || null,
             page: page.value,
             per_page: 10,
         },
         signal,
     ),
 );
-const planState = useAsyncState(async (signal) => {
-    plans.value = await plan.list(signal);
-    return plans.value;
-});
 const rows = computed(() => state.data.value?.results || []);
 let debounce;
-watch([search, status, holder, planId], () => {
+watch([search, status, holder], () => {
     clearTimeout(debounce);
     debounce = setTimeout(() => {
         if (page.value !== 1) page.value = 1;
@@ -71,26 +77,41 @@ onBeforeUnmount(() => clearTimeout(debounce));
 async function create() {
     busy.value = true;
     error.value = '';
+    success.value = '';
     try {
-        await patient.create({ ...form, planoId: Number(form.planoId) });
+        await patient.create({ ...form });
         open.value = false;
         Object.assign(form, {
-            nome: '',
+            name: '',
+            social_name: '',
+            cpf: '',
+            cns: '',
             email: '',
-            telefone: '',
-            nascimento: '',
-            planoId: null,
+            phone: '',
+            birth_date: '',
+            holder_cpf: '',
+            address: {
+                street: '',
+                number: '',
+                complement: '',
+                neighborhood: '',
+                city: '',
+                state: '',
+                zip_code: '',
+            },
         });
         await state.run();
+        success.value = 'Paciente cadastrado com sucesso.';
     } catch (e) {
-        error.value = e.userMessage;
+        error.value =
+            Object.values(e.response?.data?.errors || {})[0]?.[0] ||
+            e.userMessage;
     } finally {
         busy.value = false;
     }
 }
 onMounted(() => {
     state.run();
-    planState.run();
 });
 </script>
 <template>
@@ -98,17 +119,10 @@ onMounted(() => {
         title="Pacientes"
         description="Encontre um cadastro e acompanhe as informações permitidas."
     >
-        <AppButton @click="open = true">
-            ＋ Novo paciente demonstrativo
-        </AppButton>
+        <AppButton @click="open = true">+ Novo paciente</AppButton>
     </PageHeader>
     <div class="sm-stack">
-        <AppAlert v-if="planState.error.value" tone="danger">
-            {{ planState.error.value }}
-            <button class="sm-link" @click="planState.run()">
-                Recarregar planos
-            </button>
-        </AppAlert>
+        <AppAlert v-if="success" tone="success">{{ success }}</AppAlert>
         <AppCard>
             <div class="sm-grid">
                 <AppField
@@ -133,19 +147,6 @@ onMounted(() => {
                         <option value="dependente">Dependentes</option>
                     </select>
                 </div>
-                <div class="sm-field">
-                    <label for="patient-plan">Plano</label>
-                    <select id="patient-plan" v-model="planId">
-                        <option value="">Todos os planos</option>
-                        <option
-                            v-for="item in plans"
-                            :key="item.id"
-                            :value="item.id"
-                        >
-                            {{ item.nome }}
-                        </option>
-                    </select>
-                </div>
             </div>
             <button
                 class="sm-button secondary sm-mt"
@@ -153,7 +154,6 @@ onMounted(() => {
                     search = '';
                     status = '';
                     holder = '';
-                    planId = '';
                 "
             >
                 Limpar filtros
@@ -167,13 +167,14 @@ onMounted(() => {
             <AppCard>
                 <div class="sm-table-wrap">
                     <table class="sm-table">
-                        <caption>Pacientes do cenário selecionado</caption>
+                        <caption>
+                            Pacientes cadastrados no cliente atual
+                        </caption>
                         <thead>
                             <tr>
                                 <th scope="col">Nome</th>
-                                <th scope="col">CPF fictício</th>
+                                <th scope="col">CPF protegido</th>
                                 <th scope="col">Titularidade</th>
-                                <th scope="col">Plano</th>
                                 <th scope="col">Situação</th>
                             </tr>
                         </thead>
@@ -197,13 +198,6 @@ onMounted(() => {
                                         record.titular
                                             ? 'Titular'
                                             : 'Dependente'
-                                    }}
-                                </td>
-                                <td>
-                                    {{
-                                        plans.find(
-                                            (p) => p.id === record.planoId,
-                                        )?.nome
                                     }}
                                 </td>
                                 <td>
@@ -238,53 +232,90 @@ onMounted(() => {
     </div>
     <AppModal
         :open="open"
-        title="Novo paciente demonstrativo"
+        title="Novo paciente"
         @close="!busy && (open = false)"
     >
         <form class="sm-stack-sm" @submit.prevent="create">
-            <AppAlert>
-                Informe somente dados fictícios. O documento será preenchido com
-                uma sequência inválida de demonstração.
-            </AppAlert>
             <AppField
                 id="new-name"
-                label="Nome fictício"
-                v-model="form.nome"
+                label="Nome completo"
+                v-model="form.name"
                 required
             />
             <AppField
-                id="new-birth"
-                label="Nascimento fictício"
-                type="date"
-                v-model="form.nascimento"
+                id="new-social-name"
+                label="Nome social"
+                v-model="form.social_name"
+            />
+            <AppField
+                id="new-cpf"
+                label="CPF"
+                v-model="form.cpf"
                 required
+                placeholder="000.000.000-00"
+            />
+            <AppField id="new-cns" label="CNS" v-model="form.cns" />
+            <AppField
+                id="new-birth"
+                label="Nascimento"
+                type="date"
+                v-model="form.birth_date"
             />
             <AppField
                 id="new-email"
-                label="E-mail de exemplo"
+                label="E-mail"
                 type="email"
                 v-model="form.email"
             />
+            <AppField id="new-phone" label="Telefone" v-model="form.phone" />
             <AppField
-                id="new-phone"
-                label="Telefone de exemplo"
-                v-model="form.telefone"
+                id="new-holder-cpf"
+                label="CPF do titular, se dependente"
+                v-model="form.holder_cpf"
+                placeholder="000.000.000-00"
             />
-            <div class="sm-field">
-                <label for="new-plan">Plano</label>
-                <select id="new-plan" v-model="form.planoId" required>
-                    <option :value="null" disabled>Escolha um plano</option>
-                    <option
-                        v-for="item in plans"
-                        :key="item.id"
-                        :value="item.id"
-                    >
-                        {{ item.nome }}
-                    </option>
-                </select>
+            <h3>Endereço</h3>
+            <AppField
+                id="new-address-street"
+                label="Rua"
+                v-model="form.address.street"
+            />
+            <div class="sm-grid">
+                <AppField
+                    id="new-address-number"
+                    label="Número"
+                    v-model="form.address.number"
+                />
+                <AppField
+                    id="new-address-complement"
+                    label="Complemento"
+                    v-model="form.address.complement"
+                />
+            </div>
+            <AppField
+                id="new-address-neighborhood"
+                label="Bairro"
+                v-model="form.address.neighborhood"
+            />
+            <div class="sm-grid">
+                <AppField
+                    id="new-address-city"
+                    label="Cidade"
+                    v-model="form.address.city"
+                />
+                <AppField
+                    id="new-address-state"
+                    label="UF"
+                    v-model="form.address.state"
+                />
+                <AppField
+                    id="new-address-zip-code"
+                    label="CEP"
+                    v-model="form.address.zip_code"
+                />
             </div>
             <AppAlert v-if="error" tone="danger">{{ error }}</AppAlert>
-            <AppButton type="submit" :busy="busy">Criar no cenário</AppButton>
+            <AppButton type="submit" :busy="busy">Cadastrar paciente</AppButton>
         </form>
     </AppModal>
 </template>

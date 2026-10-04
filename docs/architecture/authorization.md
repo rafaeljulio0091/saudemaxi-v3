@@ -11,6 +11,9 @@
   contexto recebidos do cliente em fluxos de triagem e demonstração.
 - O route model binding fornece `TriageSession` a partir do UUID, mas a
   autorização é responsabilidade da policy, não do UUID.
+- Cadastros nativos têm Policies por recurso. Pacientes são resolvidos por UUID
+  dentro do tenant antes da Policy, evitando IDOR e retornando 404 para outro
+  tenant.
 
 ## Invariantes
 
@@ -22,10 +25,8 @@
 
 ## Riscos e lacunas
 
-- As rotas de gestor são protegidas por papel, mas os clientes LSX recebem
-  filtros e usam um token de clínica. Não há uma policy local ou escopo de
-  tenant visível nesses controllers; a separação efetiva dentro da LSX é
-  `NEEDS_VERIFICATION`.
+- A separação efetiva de tenant dentro da LSX continua
+  `NEEDS_VERIFICATION`, mas o cadastro nativo não depende dessa separação.
 - Não foi encontrado um mecanismo global que aplique tenant a todas as queries.
 - A rota `/gestor/pacientes/{id}` existe como página não pronta, e não como
   fluxo de ficha implementado; qualquer implementação futura exige teste IDOR.

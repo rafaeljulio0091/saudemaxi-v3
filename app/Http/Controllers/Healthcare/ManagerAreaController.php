@@ -15,6 +15,7 @@ class ManagerAreaController extends Controller
         return Inertia::render('Healthcare/'.$request->route('page'), [
             'healthcare' => $context->forManager($request->user()),
             'title' => $request->route('title'),
+            'recordId' => $request->route('id'),
         ]);
     }
 }

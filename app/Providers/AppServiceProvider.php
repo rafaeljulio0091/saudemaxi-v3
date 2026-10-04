@@ -49,5 +49,8 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(12)
                 ->by(($request->user()?->id ?? $request->ip()).':'.$sessionId);
         });
+
+        RateLimiter::for('sensitive-registry', fn (Request $request) => Limit::perMinute(30)
+            ->by((string) ($request->user()?->id ?? $request->ip())));
     }
 }

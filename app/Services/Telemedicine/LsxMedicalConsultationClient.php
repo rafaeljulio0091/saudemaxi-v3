@@ -26,6 +26,7 @@ class LsxMedicalConsultationClient
         // The documented example sends the CPF as digits only (?cpf=12345678901);
         // stored or typed values may carry a mask.
         $cpf = preg_replace('/\D/', '', (string) ($filters['cpf'] ?? ''));
+        $doctorCpf = preg_replace('/\D/', '', (string) ($filters['doctor_cpf'] ?? ''));
 
         if ($cpf === '') {
             return ['count' => 0, 'results' => []];
@@ -34,7 +35,7 @@ class LsxMedicalConsultationClient
         $query = array_filter([
             'cpf' => $cpf,
             'status' => $filters['status'] ?? null,
-            'doctor_cpf' => $filters['doctor_cpf'] ?? null,
+            'doctor_cpf' => $doctorCpf !== '' ? $doctorCpf : null,
             'start_date_min' => $filters['start_date_min'] ?? null,
             'start_date_max' => $filters['start_date_max'] ?? null,
             'page' => $filters['page'] ?? 1,

@@ -19,10 +19,8 @@ class LsxMedicalAuthClient
                     'email' => $email,
                     'password' => $password,
                 ]);
-        } catch (ConnectionException $e) {
-            Log::error('lsxmedical.login.connection_error', [
-                'message' => $e->getMessage(),
-            ]);
+        } catch (ConnectionException) {
+            Log::error('lsxmedical.login.connection_error');
 
             return LsxMedicalAuthResult::unavailable();
         }

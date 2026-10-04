@@ -61,9 +61,12 @@ class ManagerDataService
      */
     private function dashboard(Tenant $tenant): array
     {
-        $birthdates = $tenant->users()
+        $nativeBirthdates = $tenant->patients()->pluck('birth_date');
+        $legacyBirthdates = $tenant->users()
             ->where('role', UserRole::Patient)
+            ->whereDoesntHave('patientProfile')
             ->pluck('birthdate');
+        $birthdates = $nativeBirthdates->concat($legacyBirthdates);
 
         $ages = array_map(fn (array $band) => [
             'faixa' => $band['faixa'],

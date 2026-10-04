@@ -16,6 +16,9 @@
   tenant.
 - O contexto da demonstração é isolado em sessão e em dados de demonstração,
   mas não é o mesmo mecanismo dos dados persistidos.
+- `TenantContext` centraliza a resolução de tenant autenticado nos Services
+  nativos. Relações recebidas como UUID são consultadas novamente dentro desse
+  tenant.
 
 ## Invariantes
 
@@ -26,8 +29,9 @@
 
 ## Riscos e lacunas
 
-- Não existe global scope ou serviço único de resolução de tenant comprovado.
-  Cada novo acesso precisa ser revisado individualmente.
+- Não existe global scope para todo o código legado. O cadastro nativo possui
+  serviço central de contexto, mas cada query continua explicitamente
+  escopada e coberta por Policy.
 - Registro local e provisionamento via LSX deixam `tenant_id` nulo por padrão;
   a regra de associação automática é `NEEDS_VERIFICATION`.
 - Os fluxos de gestor consultam a API LSX com token de clínica e CPF/filtros;
