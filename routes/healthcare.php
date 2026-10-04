@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Healthcare\ConsultationController;
+use App\Http\Controllers\Healthcare\ConsultationSchedulingController;
 use App\Http\Controllers\Healthcare\DemoController;
 use App\Http\Controllers\Healthcare\HealthcareDataController;
 use App\Http\Controllers\Healthcare\ManagerAreaController;
@@ -89,6 +90,22 @@ Route::prefix('triagem')->middleware(['auth', 'verified'])->group(function () {
     Route::post('pharmacies-nearby', NearbyPharmacyController::class)
         ->middleware([EnsureUserHasRole::class.':patient', 'throttle:30,1,nearby-pharmacies:'])
         ->name('healthcare.patient.pharmacies-nearby');
+
+    Route::get('specialties', [ConsultationSchedulingController::class, 'specialties'])
+        ->middleware([EnsureUserHasRole::class.':patient', 'throttle:60,1,scheduling-read:']);
+    Route::post('days', [ConsultationSchedulingController::class, 'days'])
+        ->defaults('scheduling_step', 'days')
+        ->middleware([EnsureUserHasRole::class.':patient', 'throttle:60,1,scheduling-read:']);
+    Route::post('times', [ConsultationSchedulingController::class, 'times'])
+        ->defaults('scheduling_step', 'times')
+        ->middleware([EnsureUserHasRole::class.':patient', 'throttle:60,1,scheduling-read:']);
+    Route::post('doctors', [ConsultationSchedulingController::class, 'doctors'])
+        ->defaults('scheduling_step', 'doctors')
+        ->middleware([EnsureUserHasRole::class.':patient', 'throttle:60,1,scheduling-read:']);
+    Route::post('schedule', [ConsultationSchedulingController::class, 'store'])
+        ->middleware([EnsureUserHasRole::class.':patient', 'throttle:5,1,scheduling-create:'])
+        ->block(10, 5)
+        ->name('healthcare.patient.schedule');
 
     // Generic data endpoints for the real (non-demonstration) patient area:
     // /atendimento, /agendamento, /farmacia, /consultas and /nr1 all share

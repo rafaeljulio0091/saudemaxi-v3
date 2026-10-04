@@ -28,6 +28,14 @@ return [
 
     'consultation_history_endpoint' => env('LSXMEDICAL_CONSULTATION_HISTORY_ENDPOINT', '/api/clinic/consultation-history/'),
 
+    'scheduling' => [
+        'specialties_endpoint' => env('LSXMEDICAL_SPECIALTIES_ENDPOINT', '/api/clinic/scheduling/specialties/'),
+        'business_days_endpoint' => env('LSXMEDICAL_BUSINESS_DAYS_ENDPOINT', '/api/clinic/scheduling/business-days/'),
+        'available_times_endpoint' => env('LSXMEDICAL_AVAILABLE_TIMES_ENDPOINT', '/api/clinic/scheduling/available-times/'),
+        'doctors_endpoint' => env('LSXMEDICAL_DOCTORS_ENDPOINT', '/api/clinic/scheduling/doctors/'),
+        'create_consultation_endpoint' => env('LSXMEDICAL_CREATE_CONSULTATION_ENDPOINT', '/api/clinic/scheduling/create-consultation/'),
+    ],
+
     'timeout' => (int) env('LSXMEDICAL_TIMEOUT', 10),
 
 ];

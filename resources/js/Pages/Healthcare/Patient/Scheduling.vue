@@ -44,6 +44,7 @@ const state = useAsyncState((signal) => {
     return appointment.doctors(input(), signal);
 });
 function pick(item) {
+    requestId.value = crypto.randomUUID();
     if (step.value === 0) choice.specialty = item;
     if (step.value === 1) choice.date = item;
     if (step.value === 2) choice.time = item;
@@ -53,6 +54,7 @@ function pick(item) {
 }
 function back() {
     if (busy.value || result.value) return;
+    requestId.value = crypto.randomUUID();
     step.value--;
     if (step.value <= 0) choice.specialty = null;
     if (step.value <= 1) choice.date = null;
@@ -70,6 +72,7 @@ async function confirm() {
             result.value = await appointment.create({
                 ...input(),
                 doctor_id: choice.doctor.id,
+                is_real_doctor: Boolean(choice.doctor.is_real),
                 request_id: requestId.value,
             });
     } catch (e) {
@@ -146,9 +149,9 @@ onMounted(() => {
                                 class="sm-small sm-muted"
                             >
                                 {{
-                                    option.price
+                                    option.price !== null
                                         ? money(option.price)
-                                        : 'Sem custo no plano demonstrativo'
+                                        : 'Valor não informado'
                                 }}
                             </p>
                         </button>
@@ -172,28 +175,58 @@ onMounted(() => {
                     <dd>{{ choice.doctor.name }}</dd>
                 </div>
                 <div>
-                    <dt class="sm-muted">Valor demonstrativo</dt>
-                    <dd>{{ money(choice.doctor.price) }}</dd>
+                    <dt class="sm-muted">
+                        {{
+                            context.demo
+                                ? 'Valor demonstrativo'
+                                : 'Valor informado'
+                        }}
+                    </dt>
+                    <dd>
+                        {{
+                            choice.doctor.price !== null
+                                ? money(choice.doctor.price)
+                                : 'Valor não informado'
+                        }}
+                    </dd>
                 </div>
             </dl>
-            <AppAlert class="sm-mt">
+            <AppAlert v-if="context.demo" class="sm-mt">
                 Nenhuma cobrança será realizada. O agendamento será salvo apenas
                 na demonstração.
             </AppAlert>
+            <AppAlert v-else class="sm-mt">
+                A consulta será enviada à plataforma de atendimento. Nenhuma
+                cobrança será realizada por esta confirmação.
+            </AppAlert>
             <AppButton class="sm-mt" :busy="busy" @click="confirm">
-                Confirmar agendamento demonstrativo
+                {{
+                    context.demo
+                        ? 'Confirmar agendamento demonstrativo'
+                        : 'Confirmar agendamento'
+                }}
             </AppButton>
         </AppCard>
         <AppCard v-if="result" class="sm-stack-sm">
-            <h2>Agendamento demonstrativo registrado</h2>
+            <h2>
+                {{
+                    context.demo
+                        ? 'Agendamento demonstrativo registrado'
+                        : 'Agendamento confirmado'
+                }}
+            </h2>
             <p>
                 {{ result.especialidade }} · {{ date(result.agendadaPara) }} ·
                 {{ result.codigo }}
             </p>
-            <AppAlert tone="warning">
+            <AppAlert v-if="context.demo" tone="warning">
                 Nenhuma consulta foi criada na plataforma de atendimento. O
                 pagamento permanece em aberto na demonstração e pode ser marcado
                 pelo perfil gestor.
+            </AppAlert>
+            <AppAlert v-else>
+                A consulta foi registrada na plataforma de atendimento e na
+                Saúde Maxi.
             </AppAlert>
             <AppButton :href="href('/consultas')">
                 Ver minhas consultas

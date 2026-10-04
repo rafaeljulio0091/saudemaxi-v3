@@ -17,6 +17,12 @@
   `TriageAiEvent` e `Prescription` definem relações explícitas.
 - O driver de sessão padrão é database e há tabelas de jobs, mas nenhum Job
   customizado foi encontrado.
+- `consultation_appointments` mantém o espelho local mínimo de agendamentos
+  LSX, com escopo por `tenant_id` e `user_id`, UUID público, idempotência por
+  `request_id`, identificadores do provedor e estado de sincronização. CPF e
+  link do paciente não são persistidos nessa tabela. Os nomes de especialidade
+  e profissional e o identificador interno do provedor usam cast
+  criptografado.
 
 ## Invariantes
 
@@ -32,8 +38,10 @@
 - `users.cpf` permanece legado. O novo `patients.cpf` é criptografado e tem
   unicidade por tenant via `cpf_hash`; migração do valor legado depende de uma
   regra de vínculo ainda `NEEDS_VERIFICATION`.
-- Não foi verificada uma execução de migrations em banco descartável neste
-  Harness: `NEEDS_VERIFICATION` até a validação local adequada.
+- A migration de agendamentos foi exercitada pelo banco SQLite descartável da
+  suíte. A execução específica em MySQL permanece `NEEDS_VERIFICATION`.
+- A política de retenção e exclusão dos agendamentos locais depende de decisão
+  jurídica e de produto: `NEEDS_VERIFICATION`.
 
 ## Arquivos principais
 

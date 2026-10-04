@@ -23,9 +23,20 @@
   falhas para `TelemedicineApiException` (indisponível, não autorizado,
   inválido, não encontrado e rejeição de negócio).
 - Controllers capturam essa exceção, reportam e exibem erro resumido.
-- Não há cliente de webhook, prescrição retornada, especialidades, horários,
-  médicos, agendamento ou vídeo no código atual; `HealthcareDataService`
-  retorna 503 honesto para esses recursos pendentes.
+- `LsxMedicalSchedulingClient` implementa a sequência de especialidades, dias
+  úteis, horários, profissionais e criação de consulta. Cada seleção é
+  revalidada no backend antes da criação.
+- `ConsultationSchedulingService` deriva CPF e tenant do usuário autenticado,
+  força `is_paid=false` e registra o agendamento local antes da escrita remota.
+- A criação usa `request_id` único por paciente e tenant. Falha ambígua de
+  conexão, indisponibilidade ou resposta inválida muda o registro para
+  `reconciliation_required` e bloqueia reenvio automático.
+- Falha ao concluir a persistência depois de uma resposta LSX válida também
+  exige reconciliação e não dispara uma segunda criação remota.
+- O registro local não guarda CPF nem `patient_link`. Nomes de especialidade e
+  profissional são criptografados em aplicação.
+- Não há cliente de webhook, prescrição retornada ou vídeo no código atual;
+  `HealthcareDataService` retorna 503 honesto para esses recursos pendentes.
 - Não há sincronização automática entre o cadastro nativo e a LSX. O mapeamento
   e a reconciliação exigem contrato homologado e permanecem
   `NEEDS_VERIFICATION`.
@@ -43,15 +54,26 @@
 
 - Não há retries/circuit breaker explícitos. Adicioná-los exige análise de
   idempotência e contrato LSX.
+- A reconciliação automática de registros `reconciliation_required` ainda não
+  existe. Uma nova tentativa com o mesmo `request_id` é bloqueada para evitar
+  consulta duplicada.
 - Mensagens de erro do provedor podem ser retornadas em contexto de validação;
   revisar redaction antes de ampliar os payloads exibidos.
 - A separação de dados por clínica/tenant dentro do token LSX é
   `NEEDS_VERIFICATION`.
+- A base legal e o prazo de retenção do espelho local de agendamentos são
+  `NEEDS_VERIFICATION`.
+- O contrato foi implementado conforme a referência funcional disponível. A
+  homologação real, inclusive formatos de resposta, permanece
+  `NEEDS_VERIFICATION` porque nenhuma consulta real foi criada durante os
+  testes automatizados.
 
 ## Arquivos principais
 
 `config/lsxmedical.php`, `.env.example`, `app/Services/Telemedicine/*`,
 `app/Http/Controllers/Healthcare/PatientController.php`,
 `app/Http/Controllers/Healthcare/ConsultationController.php`,
+`app/Http/Controllers/Healthcare/ConsultationSchedulingController.php`,
+`app/Services/Healthcare/ConsultationSchedulingService.php`,
 `app/Services/Healthcare/HealthcareDataService.php` e testes de autenticação,
 pacientes e consultas.

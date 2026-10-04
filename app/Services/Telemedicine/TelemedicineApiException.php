@@ -7,7 +7,7 @@ use RuntimeException;
 class TelemedicineApiException extends RuntimeException
 {
     /**
-     * @param  'timeout'|'unavailable'|'unauthorized'|'invalid'|'not_found'|'business_rejection'  $reason
+     * @param  'timeout'|'unavailable'|'unauthorized'|'invalid'|'invalid_response'|'not_found'|'business_rejection'|'local_persistence'  $reason
      * @param  array<string, mixed>  $errors
      */
     public function __construct(

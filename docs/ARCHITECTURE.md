@@ -45,9 +45,9 @@ Browser
   customizados no código atual.
 - Não há `routes/api.php`; as respostas JSON de saúde estão em rotas web
   autenticadas.
-- O fluxo de agendamento, especialidades, médicos, horários e vídeo ainda é
-  explicitamente marcado como integração pendente em
-  `HealthcareDataService`.
+- O fluxo de agendamento usa a API LSX a partir do backend e mantém um espelho
+  local tenant-scoped. Vídeo continua explicitamente marcado como integração
+  pendente em `HealthcareDataService`.
 - A aplicação possui cadastro nativo de pacientes e diretório de saúde. O
   acesso novo usa `TenantContext`, Policies e Services com queries escopadas;
   ainda não existe global scope de tenant para todo o código legado.

@@ -21,10 +21,14 @@ Estes fluxos não podem quebrar sem uma revisão explícita.
 - autenticação server-side LSX;
 - busca/criação de paciente;
 - histórico de consultas por CPF;
+- especialidades, disponibilidade, profissionais e criação de consulta;
+- idempotência por solicitação e bloqueio de repetição quando a resposta da
+  criação exigir reconciliação;
+- persistência local do agendamento sempre escopada por tenant e paciente;
 - mapeamento de 401/403/404/422/409/5xx e indisponibilidade.
 
 Não listar como existente o que o código marca como integração pendente:
-especialidades, disponibilidade, médicos, agendamento, vídeo e MAX remoto.
+vídeo e MAX remoto.
 
 ## Frontend
 
