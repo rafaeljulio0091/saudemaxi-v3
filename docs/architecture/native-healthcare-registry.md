@@ -123,6 +123,30 @@ status e `last_login_at`; o login local ou LSX atualiza `last_login_at` após a
 regeneração da sessão. Um paciente pode existir sem usuário. Vincular um
 cadastro nativo a uma conta não é automático.
 
+### Farmácias do Programa Farmácia Popular
+
+A planilha oficial de Taubaté em
+`docs/09c1abc7-f600-4a36-8a94-170efe48c578.xlsx` é importada de forma
+idempotente para um tenant explicitamente selecionado pelo comando:
+
+```bash
+php artisan healthcare:import-taubate-pharmacies <tenant-slug>
+```
+
+O importador valida o formato esperado, mantém CNPJ e endereço protegidos pelos
+casts existentes, não registra o conteúdo da planilha em logs e identifica a
+origem com `data_source=gov_pfpb`. A planilha contém 22 registros e não fornece
+número, CEP, horário, latitude ou longitude. Esses dados não são inferidos.
+
+A página `/farmacias` solicita a localização pelo recurso nativo do navegador.
+As coordenadas são enviadas em um corpo `POST` autenticado, com precisão
+reduzida, e usadas somente durante a requisição. Elas não são persistidas,
+registradas em logs, colocadas em URL ou armazenadas no estado global do
+frontend. O servidor aplica perfil, módulo contratado e tenant antes da busca.
+Quando uma farmácia possuir coordenadas confiáveis no cadastro, os resultados
+são ordenados por distância. Sem coordenadas, a interface informa a limitação e
+exibe os endereços oficiais do tenant sem estimativa.
+
 ## LGPD e retenção
 
 Os cadastros coletam somente dados operacionais previstos pelos formulários.

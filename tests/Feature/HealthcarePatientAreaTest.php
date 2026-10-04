@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Pharmacy;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,6 +22,7 @@ class HealthcarePatientAreaTest extends TestCase
         '/atendimento' => 'Healthcare/Patient/Immediate',
         '/agendamento' => 'Healthcare/Patient/Scheduling',
         '/farmacia' => 'Healthcare/Patient/Pharmacy',
+        '/farmacias' => 'Healthcare/Patient/Pharmacies',
         '/consultas' => 'Healthcare/Shared/Consultations',
         '/nr1' => 'Healthcare/Patient/MentalHealth',
         '/conta' => 'Healthcare/Patient/Account',
@@ -75,6 +77,66 @@ class HealthcarePatientAreaTest extends TestCase
         $this->getJson('/triagem/prescriptions')->assertUnauthorized();
         $manager = User::factory()->manager()->create();
         $this->actingAs($manager)->getJson('/triagem/prescriptions')->assertForbidden();
+    }
+
+    public function test_nearby_pharmacies_are_scoped_to_the_patient_tenant_and_sorted_by_distance(): void
+    {
+        $patient = $this->makePatient();
+        $nearby = $this->pharmacyWithAddress($patient->tenant, 'Farmácia Próxima', -23.0264, -45.5553);
+        $this->pharmacyWithAddress($patient->tenant, 'Farmácia Distante', -23.1264, -45.6553);
+        $otherTenant = Tenant::factory()->create();
+        $this->pharmacyWithAddress($otherTenant, 'Farmácia de outro cliente', -23.0264, -45.5553);
+
+        $response = $this->actingAs($patient)->postJson('/triagem/pharmacies-nearby', [
+            'latitude' => -23.0265,
+            'longitude' => -45.5554,
+            'accuracy' => 25,
+        ])->assertOk()
+            ->assertJsonCount(2)
+            ->assertJsonPath('0.id', $nearby->uuid)
+            ->assertJsonPath('0.name', 'Farmácia Próxima')
+            ->assertJsonMissing(['name' => 'Farmácia de outro cliente']);
+
+        $this->assertLessThan(1, $response->json('0.distance_km'));
+    }
+
+    public function test_nearby_pharmacy_search_validates_location_and_protected_context(): void
+    {
+        $this->postJson('/triagem/pharmacies-nearby', [
+            'latitude' => -23,
+            'longitude' => -45,
+        ])->assertUnauthorized();
+
+        $patient = $this->makePatient();
+        $otherTenant = Tenant::factory()->create();
+
+        $this->actingAs($patient)->postJson('/triagem/pharmacies-nearby', [
+            'latitude' => 91,
+            'longitude' => -45,
+            'tenant_id' => $otherTenant->id,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['latitude', 'tenant_id']);
+
+        $manager = User::factory()->manager()->create(['tenant_id' => $patient->tenant_id]);
+        $this->actingAs($manager)->postJson('/triagem/pharmacies-nearby', [
+            'latitude' => -23,
+            'longitude' => -45,
+        ])->assertForbidden();
+    }
+
+    public function test_nearby_pharmacy_search_enforces_the_contracted_module(): void
+    {
+        $patient = $this->makePatient();
+        $patient->tenant->plans()->create([
+            'name' => 'Sem farmácia',
+            'modules' => ['farmacia' => false],
+            'is_default' => true,
+        ]);
+
+        $this->actingAs($patient)->postJson('/triagem/pharmacies-nearby', [
+            'latitude' => -23,
+            'longitude' => -45,
+        ])->assertForbidden();
     }
 
     public function test_prescriptions_are_empty_until_a_photo_is_uploaded_and_scoped_per_patient(): void
@@ -308,5 +370,35 @@ class HealthcarePatientAreaTest extends TestCase
         $patient = $this->makePatient();
         $this->actingAs($patient)->get('/inicio')->assertStatus(503);
         $this->actingAs($patient)->get('/gestor/pacientes')->assertForbidden();
+    }
+
+    private function pharmacyWithAddress(
+        Tenant $tenant,
+        string $name,
+        float $latitude,
+        float $longitude,
+    ): Pharmacy {
+        $pharmacy = new Pharmacy([
+            'name' => $name,
+            'is_public' => false,
+            'is_active' => true,
+            'data_source' => 'test',
+        ]);
+        $pharmacy->tenant_id = $tenant->id;
+        $pharmacy->save();
+
+        $address = $pharmacy->addresses()->make([
+            'street' => 'Rua Teste',
+            'district' => 'Centro',
+            'city' => 'Taubaté',
+            'state' => 'SP',
+            'country' => 'BR',
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+        ]);
+        $address->tenant_id = $tenant->id;
+        $address->save();
+
+        return $pharmacy;
     }
 }

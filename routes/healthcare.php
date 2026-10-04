@@ -7,6 +7,7 @@ use App\Http\Controllers\Healthcare\HealthcareDataController;
 use App\Http\Controllers\Healthcare\ManagerAreaController;
 use App\Http\Controllers\Healthcare\ManagerDataController;
 use App\Http\Controllers\Healthcare\MaxMessageController;
+use App\Http\Controllers\Healthcare\NearbyPharmacyController;
 use App\Http\Controllers\Healthcare\PatientAreaController;
 use App\Http\Controllers\Healthcare\PatientController;
 use App\Http\Controllers\Healthcare\TriagePageController;
@@ -42,7 +43,7 @@ $pages = [
 // Paths already backed by a real (non-demonstration) implementation. Every
 // other entry in $pages keeps rendering the 503 placeholder below until it
 // gets the same treatment.
-$readyPatientPaths = ['orientacao', 'atendimento', 'agendamento', 'farmacia', 'consultas', 'nr1', 'conta', 'ajuda'];
+$readyPatientPaths = ['orientacao', 'atendimento', 'agendamento', 'farmacia', 'farmacias', 'consultas', 'nr1', 'conta', 'ajuda'];
 $readyManagerPaths = ['gestor/planos', 'gestor/identidade', 'gestor/integracao'];
 
 foreach ($pages as [$path, $page, $title, $profile, $module]) {
@@ -60,7 +61,7 @@ Route::get('orientacao', TriagePageController::class)
     ->name('healthcare.patient.guidance');
 
 foreach ($pages as [$path, $page, $title, $profile, $module]) {
-    if (! in_array($path, ['atendimento', 'agendamento', 'farmacia', 'consultas', 'nr1', 'conta', 'ajuda'], true)) {
+    if (! in_array($path, ['atendimento', 'agendamento', 'farmacia', 'farmacias', 'consultas', 'nr1', 'conta', 'ajuda'], true)) {
         continue;
     }
 
@@ -84,6 +85,10 @@ Route::prefix('triagem')->middleware(['auth', 'verified'])->group(function () {
     Route::post('max', MaxMessageController::class)
         ->middleware([EnsureUserHasRole::class.':patient', 'throttle:max-messages'])
         ->name('max.patient');
+
+    Route::post('pharmacies-nearby', NearbyPharmacyController::class)
+        ->middleware([EnsureUserHasRole::class.':patient', 'throttle:30,1,nearby-pharmacies:'])
+        ->name('healthcare.patient.pharmacies-nearby');
 
     // Generic data endpoints for the real (non-demonstration) patient area:
     // /atendimento, /agendamento, /farmacia, /consultas and /nr1 all share
