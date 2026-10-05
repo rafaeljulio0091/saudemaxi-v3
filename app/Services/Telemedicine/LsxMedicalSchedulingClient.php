@@ -42,7 +42,7 @@ class LsxMedicalSchedulingClient
         $result = $this->request(
             fn (PendingRequest $http) => $http->post(
                 config('lsxmedical.scheduling.business_days_endpoint'),
-                ['specialty_id' => $specialtyId],
+                ['specialty' => $specialtyId],
             ),
             'scheduling.business-days',
         );
@@ -56,7 +56,7 @@ class LsxMedicalSchedulingClient
         $result = $this->request(
             fn (PendingRequest $http) => $http->post(
                 config('lsxmedical.scheduling.available_times_endpoint'),
-                ['specialty_id' => $specialtyId, 'date' => $date],
+                ['specialty' => $specialtyId, 'date' => $date],
             ),
             'scheduling.available-times',
         );
@@ -70,7 +70,7 @@ class LsxMedicalSchedulingClient
         $result = $this->request(
             fn (PendingRequest $http) => $http->post(
                 config('lsxmedical.scheduling.doctors_endpoint'),
-                ['specialty_id' => $specialtyId, 'date' => $date, 'time' => $time],
+                ['specialty' => $specialtyId, 'date' => $date, 'time' => $time],
             ),
             'scheduling.doctors',
         );

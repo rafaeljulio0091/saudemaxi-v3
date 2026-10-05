@@ -58,6 +58,22 @@ class ConsultationSchedulingTest extends TestCase
             DB::table('consultation_appointments')->value('specialty_name'),
         );
 
+        Http::assertSent(fn (Request $request): bool => str_ends_with(
+            $request->url(),
+            '/api/clinic/scheduling/business-days/',
+        ) && $request->data() === ['specialty' => 6]);
+        Http::assertSent(fn (Request $request): bool => str_ends_with(
+            $request->url(),
+            '/api/clinic/scheduling/available-times/',
+        ) && $request->data() === ['specialty' => 6, 'date' => $date]);
+        Http::assertSent(fn (Request $request): bool => str_ends_with(
+            $request->url(),
+            '/api/clinic/scheduling/doctors/',
+        ) && $request->data() === [
+            'specialty' => 6,
+            'date' => $date,
+            'time' => '09:30',
+        ]);
         Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
             && str_ends_with($request->url(), '/api/clinic/scheduling/create-consultation/')
             && $request->hasHeader('Authorization', 'Bearer test-service-token')
@@ -71,6 +87,24 @@ class ConsultationSchedulingTest extends TestCase
                 'is_paid' => false,
             ]);
         Http::assertSentCount(5);
+    }
+
+    public function test_patient_loads_days_using_the_provider_specialty_parameter(): void
+    {
+        $patient = $this->patient();
+        $date = now()->addDays(2)->toDateString();
+
+        $this->fakeSuccessfulScheduling($date);
+
+        $this->actingAs($patient)->postJson('/triagem/days', [
+            'specialty_id' => 6,
+        ])->assertOk()->assertExactJson([$date]);
+
+        Http::assertSent(fn (Request $request): bool => str_ends_with(
+            $request->url(),
+            '/api/clinic/scheduling/business-days/',
+        ) && $request->data() === ['specialty' => 6]);
+        Http::assertSentCount(2);
     }
 
     public function test_creation_is_idempotent_and_does_not_repeat_the_provider_write(): void
@@ -305,17 +339,24 @@ class ConsultationSchedulingTest extends TestCase
                 str_ends_with($request->url(), '/api/clinic/scheduling/specialties/') => Http::response([
                     ['id' => 6, 'name' => 'Cardiologia', 'price' => 120],
                 ]),
-                str_ends_with($request->url(), '/api/clinic/scheduling/business-days/') => Http::response([$date]),
-                str_ends_with($request->url(), '/api/clinic/scheduling/available-times/') => Http::response(['09:30']),
-                str_ends_with($request->url(), '/api/clinic/scheduling/doctors/') => Http::response([
-                    [
-                        'id' => 42,
-                        'name' => 'Dra. Ana',
-                        'specialty' => 'Cardiologia',
-                        'price' => 120,
-                        'is_real' => true,
-                    ],
-                ]),
+                str_ends_with($request->url(), '/api/clinic/scheduling/business-days/')
+                    && $request->data() === ['specialty' => 6] => Http::response([$date]),
+                str_ends_with($request->url(), '/api/clinic/scheduling/available-times/')
+                    && $request->data() === ['specialty' => 6, 'date' => $date] => Http::response(['09:30']),
+                str_ends_with($request->url(), '/api/clinic/scheduling/doctors/')
+                    && $request->data() === [
+                        'specialty' => 6,
+                        'date' => $date,
+                        'time' => '09:30',
+                    ] => Http::response([
+                        [
+                            'id' => 42,
+                            'name' => 'Dra. Ana',
+                            'specialty' => 'Cardiologia',
+                            'price' => 120,
+                            'is_real' => true,
+                        ],
+                    ]),
                 str_ends_with($request->url(), '/api/clinic/scheduling/create-consultation/') && $creationFailure === 'connection' => throw new ConnectionException('Timeout sem payload sensível'),
                 str_ends_with($request->url(), '/api/clinic/scheduling/create-consultation/') && $creationFailure === 'rejected' => Http::response([
                     'errors' => ['patient_cpf' => ['CPF rejeitado: '.self::CPF]],
@@ -332,6 +373,9 @@ class ConsultationSchedulingTest extends TestCase
                     'is_paid' => false,
                     'price' => 120,
                 ], 201),
+                str_contains($request->url(), '/api/clinic/scheduling/') => Http::response([
+                    'specialty' => ['O campo especialidade é obrigatório.'],
+                ], 400),
                 default => Http::response([], 404),
             };
         });

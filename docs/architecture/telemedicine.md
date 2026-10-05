@@ -26,6 +26,10 @@
 - `LsxMedicalSchedulingClient` implementa a sequência de especialidades, dias
   úteis, horários, profissionais e criação de consulta. Cada seleção é
   revalidada no backend antes da criação.
+- O contrato interno do browser usa `specialty_id`. O cliente Laravel traduz
+  esse campo para `specialty` nos endpoints de dias, horários e profissionais,
+  conforme validado na homologação LSX. A criação da consulta preserva
+  `specialty_id`, exigido pelo contrato específico de `create-consultation`.
 - `ConsultationSchedulingService` deriva CPF e tenant do usuário autenticado,
   força `is_paid=false` e registra o agendamento local antes da escrita remota.
 - A página `/agendamento` mantém o acesso ao atendimento imediato e oferece um
