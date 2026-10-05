@@ -8,12 +8,12 @@ use App\Services\Native\GovernmentPharmacySpreadsheetReader;
 use Illuminate\Console\Command;
 use RuntimeException;
 
-class ImportTaubateGovernmentPharmacies extends Command
+class ImportGuarujaGovernmentPharmacies extends Command
 {
-    protected $signature = 'healthcare:import-taubate-pharmacies
+    protected $signature = 'healthcare:import-guaruja-pharmacies
                             {tenant : Slug do tenant que receberá os registros}';
 
-    protected $description = 'Importa a planilha oficial do Programa Farmácia Popular para o tenant informado';
+    protected $description = 'Importa as farmácias oficiais de Guarujá para o tenant informado';
 
     public function handle(
         GovernmentPharmacySpreadsheetReader $reader,
@@ -28,8 +28,15 @@ class ImportTaubateGovernmentPharmacies extends Command
         }
 
         try {
-            $records = $reader->read(base_path('docs/09c1abc7-f600-4a36-8a94-170efe48c578.xlsx'));
-            $summary = $importer->import($tenant, 'Taubaté', 'SP', '3554102', $records, ['Taubate']);
+            $records = $reader->read(base_path('docs/25432b7a-f5d8-441e-bf08-9d14e2a6dc76.xlsx'));
+            $summary = $importer->import(
+                $tenant,
+                'Guarujá',
+                'SP',
+                '3518701',
+                $records,
+                ['Guaruja'],
+            );
         } catch (RuntimeException $exception) {
             $this->error($exception->getMessage());
 

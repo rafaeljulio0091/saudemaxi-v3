@@ -190,11 +190,6 @@ class ConsultationSchedulingService
             403,
             'Este serviço não está incluído no seu plano.',
         );
-        abort_if(
-            $user->tenant->regulacao,
-            403,
-            'A marcação passa pelo núcleo de regulação. Procure sua unidade de referência.',
-        );
     }
 
     /** @return array{id: int, name: string, price: ?float} */

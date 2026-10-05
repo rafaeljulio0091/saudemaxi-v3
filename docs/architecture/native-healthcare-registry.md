@@ -147,6 +147,14 @@ Quando uma farmácia possuir coordenadas confiáveis no cadastro, os resultados
 são ordenados por distância. Sem coordenadas, a interface informa a limitação e
 exibe os endereços oficiais do tenant sem estimativa.
 
+A planilha oficial de Guarujá em
+`docs/25432b7a-f5d8-441e-bf08-9d14e2a6dc76.xlsx` usa o mesmo leitor e
+importador, com município IBGE `3518701`:
+
+```bash
+php artisan healthcare:import-guaruja-pharmacies <tenant-slug>
+```
+
 ## LGPD e retenção
 
 Os cadastros coletam somente dados operacionais previstos pelos formulários.

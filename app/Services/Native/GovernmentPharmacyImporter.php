@@ -18,10 +18,29 @@ class GovernmentPharmacyImporter
      * @param  list<array{cnpj: string, name: string, street: string, district: string}>  $records
      * @return array{created: int, updated: int, unchanged: int}
      */
-    public function importTaubate(Tenant $tenant, array $records): array
-    {
-        return DB::transaction(function () use ($tenant, $records): array {
-            $municipality = $this->taubate($tenant);
+    public function import(
+        Tenant $tenant,
+        string $municipalityName,
+        string $state,
+        string $ibgeCode,
+        array $records,
+        array $municipalityAliases = [],
+    ): array {
+        return DB::transaction(function () use (
+            $tenant,
+            $municipalityName,
+            $state,
+            $ibgeCode,
+            $records,
+            $municipalityAliases,
+        ): array {
+            $municipality = $this->municipality(
+                $tenant,
+                $municipalityName,
+                $state,
+                $ibgeCode,
+                $municipalityAliases,
+            );
             $summary = ['created' => 0, 'updated' => 0, 'unchanged' => 0];
 
             foreach ($records as $record) {
@@ -54,7 +73,13 @@ class GovernmentPharmacyImporter
                     $pharmacy->restore();
                 }
 
-                $addressChanged = $this->storeAddress($pharmacy, $tenant, $record);
+                $addressChanged = $this->storeAddress(
+                    $pharmacy,
+                    $tenant,
+                    $record,
+                    $municipalityName,
+                    $state,
+                );
                 $changed = $created || $restored || $pharmacyChanged || $addressChanged;
 
                 if ($created) {
@@ -74,7 +99,7 @@ class GovernmentPharmacyImporter
                         'resource_id' => $pharmacy->getKey(),
                         'resource_uuid' => $pharmacy->uuid,
                         'ip_address' => null,
-                        'user_agent' => 'artisan:healthcare:import-taubate-pharmacies',
+                        'user_agent' => 'artisan:healthcare:import-government-pharmacies',
                     ]);
                 }
             }
@@ -83,28 +108,33 @@ class GovernmentPharmacyImporter
         });
     }
 
-    private function taubate(Tenant $tenant): Municipality
-    {
+    private function municipality(
+        Tenant $tenant,
+        string $name,
+        string $state,
+        string $ibgeCode,
+        array $aliases,
+    ): Municipality {
         $municipality = Municipality::withTrashed()
             ->where('tenant_id', $tenant->id)
-            ->where('ibge_code', '3554102')
+            ->where('ibge_code', $ibgeCode)
             ->lockForUpdate()
             ->first();
 
         if (! $municipality) {
             $municipality = Municipality::withTrashed()
                 ->where('tenant_id', $tenant->id)
-                ->where('state', 'SP')
-                ->whereIn('name', ['Taubaté', 'Taubate'])
+                ->where('state', $state)
+                ->whereIn('name', [$name, ...$aliases])
                 ->lockForUpdate()
                 ->first();
         }
 
         if (! $municipality) {
             $municipality = new Municipality([
-                'name' => 'Taubaté',
-                'state' => 'SP',
-                'ibge_code' => '3554102',
+                'name' => $name,
+                'state' => $state,
+                'ibge_code' => $ibgeCode,
                 'status' => RecordStatus::Active,
             ]);
             $municipality->tenant_id = $tenant->id;
@@ -117,7 +147,9 @@ class GovernmentPharmacyImporter
             $municipality->restore();
         }
 
-        $this->setIfChanged($municipality, 'ibge_code', '3554102');
+        $this->setIfChanged($municipality, 'name', $name);
+        $this->setIfChanged($municipality, 'state', $state);
+        $this->setIfChanged($municipality, 'ibge_code', $ibgeCode);
         $municipality->save();
 
         return $municipality;
@@ -126,8 +158,13 @@ class GovernmentPharmacyImporter
     /**
      * @param  array{street: string, district: string}  $record
      */
-    private function storeAddress(Pharmacy $pharmacy, Tenant $tenant, array $record): bool
-    {
+    private function storeAddress(
+        Pharmacy $pharmacy,
+        Tenant $tenant,
+        array $record,
+        string $municipalityName,
+        string $state,
+    ): bool {
         $address = $pharmacy->addresses()
             ->where('tenant_id', $tenant->id)
             ->first();
@@ -140,8 +177,8 @@ class GovernmentPharmacyImporter
         $created = ! $address->exists;
         $this->setIfChanged($address, 'street', $record['street']);
         $this->setIfChanged($address, 'district', $record['district'] ?: null);
-        $this->setIfChanged($address, 'city', 'Taubaté');
-        $this->setIfChanged($address, 'state', 'SP');
+        $this->setIfChanged($address, 'city', $municipalityName);
+        $this->setIfChanged($address, 'state', $state);
         $this->setIfChanged($address, 'country', 'BR');
         $changed = $address->isDirty();
 

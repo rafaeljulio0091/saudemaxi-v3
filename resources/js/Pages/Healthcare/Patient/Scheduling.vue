@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, reactive } from 'vue';
+import { nextTick, ref, reactive } from 'vue';
 import { date, money } from '@/utils/healthcareFormat';
 import Layout from '@/Layouts/HealthcareLayout.vue';
 import AppCard from '@/Components/Healthcare/AppCard.vue';
@@ -14,7 +14,9 @@ defineOptions({ layout: Layout });
 
 const { context, href } = useHealthcare();
 const { appointment } = useHealthcareServices();
-const step = ref(0),
+const started = ref(false),
+    manualHeading = ref(null),
+    step = ref(0),
     busy = ref(false),
     error = ref(''),
     result = ref(null);
@@ -43,6 +45,25 @@ const state = useAsyncState((signal) => {
     if (step.value === 2) return appointment.times(input(), signal);
     return appointment.doctors(input(), signal);
 });
+async function startScheduling() {
+    started.value = true;
+    error.value = '';
+    state.run();
+    await nextTick();
+    manualHeading.value?.focus();
+}
+function stopScheduling() {
+    if (busy.value) return;
+    started.value = false;
+    step.value = 0;
+    choice.specialty = null;
+    choice.date = null;
+    choice.time = null;
+    choice.doctor = null;
+    result.value = null;
+    error.value = '';
+    requestId.value = crypto.randomUUID();
+}
 function pick(item) {
     requestId.value = crypto.randomUUID();
     if (step.value === 0) choice.specialty = item;
@@ -81,24 +102,42 @@ async function confirm() {
         busy.value = false;
     }
 }
-onMounted(() => {
-    if (!context.value.tenant.regulacao) state.run();
-});
 </script>
 <template>
     <PageHeader
         title="Agendar uma consulta"
         description="Um passo de cada vez, no horário que funciona para você."
     />
-    <AppCard v-if="context.tenant.regulacao" class="sm-state">
-        <h2>A marcação passa pelo núcleo de regulação</h2>
-        <p>
-            O município organiza as consultas com especialistas. Procure sua
-            unidade de referência.
+    <AppCard v-if="!started" class="sm-stack-sm">
+        <h2>Como você deseja continuar?</h2>
+        <AppAlert v-if="context.tenant.regulacao">
+            O município também organiza consultas pelo núcleo de regulação. Você
+            pode falar com um médico agora ou solicitar um agendamento.
+        </AppAlert>
+        <p v-else>
+            Escolha entre atendimento imediato ou agendamento para uma data e um
+            horário disponíveis.
         </p>
-        <AppButton :href="href('/atendimento')">Falar com um médico</AppButton>
+        <div class="sm-row">
+            <AppButton :href="href('/atendimento')">
+                Falar com um médico
+            </AppButton>
+            <AppButton
+                v-if="!context.demo || !context.tenant.regulacao"
+                variant="secondary"
+                @click="startScheduling"
+            >
+                Realizar um agendamento
+            </AppButton>
+        </div>
     </AppCard>
-    <div v-else class="sm-stack">
+    <form v-else class="sm-stack" @submit.prevent="confirm">
+        <div>
+            <h2 ref="manualHeading" tabindex="-1">Agendamento manual</h2>
+            <p class="sm-muted">
+                Selecione a especialidade, o dia, o horário e o profissional.
+            </p>
+        </div>
         <ol class="sm-row" aria-label="Etapas do agendamento">
             <li
                 v-for="(label, index) in labels"
@@ -132,6 +171,7 @@ onMounted(() => {
                         <button
                             v-for="(option, index) in state.data.value"
                             :key="index"
+                            type="button"
                             class="sm-option"
                             @click="pick(option)"
                         >
@@ -156,6 +196,11 @@ onMounted(() => {
                             </p>
                         </button>
                     </div>
+                    <p v-if="step === 3" class="sm-small sm-muted sm-mt">
+                        Profissionais filtrados por
+                        {{ choice.specialty.name }}, {{ date(choice.date) }} às
+                        {{ choice.time }}.
+                    </p>
                 </AppCard>
             </AsyncState>
         </div>
@@ -199,7 +244,7 @@ onMounted(() => {
                 A consulta será enviada à plataforma de atendimento. Nenhuma
                 cobrança será realizada por esta confirmação.
             </AppAlert>
-            <AppButton class="sm-mt" :busy="busy" @click="confirm">
+            <AppButton class="sm-mt" type="submit" :busy="busy">
                 {{
                     context.demo
                         ? 'Confirmar agendamento demonstrativo'
@@ -241,5 +286,13 @@ onMounted(() => {
         >
             ← Voltar uma etapa
         </AppButton>
-    </div>
+        <AppButton
+            v-if="!result"
+            variant="secondary"
+            :disabled="busy"
+            @click="stopScheduling"
+        >
+            Cancelar e voltar
+        </AppButton>
+    </form>
 </template>

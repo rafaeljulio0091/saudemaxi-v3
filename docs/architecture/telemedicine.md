@@ -28,6 +28,10 @@
   revalidada no backend antes da criação.
 - `ConsultationSchedulingService` deriva CPF e tenant do usuário autenticado,
   força `is_paid=false` e registra o agendamento local antes da escrita remota.
+- A página `/agendamento` mantém o acesso ao atendimento imediato e oferece um
+  formulário manual. A especialidade selecionada participa da consulta de dias,
+  horários e profissionais disponíveis. Tenants com regulação também podem
+  iniciar esse formulário por requisito explícito de produto.
 - A criação usa `request_id` único por paciente e tenant. Falha ambígua de
   conexão, indisponibilidade ou resposta inválida muda o registro para
   `reconciliation_required` e bloqueia reenvio automático.

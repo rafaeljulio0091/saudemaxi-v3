@@ -245,7 +245,7 @@ class ConsultationSchedulingTest extends TestCase
         $this->assertDatabaseCount('consultation_appointments', 0);
     }
 
-    public function test_scheduling_is_denied_for_managers_disabled_modules_and_regulated_tenants(): void
+    public function test_scheduling_is_denied_for_managers_and_disabled_modules(): void
     {
         Http::fake();
 
@@ -262,11 +262,32 @@ class ConsultationSchedulingTest extends TestCase
         ]);
         $this->actingAs($disabled)->getJson('/triagem/specialties')->assertForbidden();
 
-        $regulated = $this->patient();
-        $regulated->tenant->forceFill(['regulacao' => true])->save();
-        $this->actingAs($regulated)->getJson('/triagem/specialties')->assertForbidden();
-
         Http::assertNothingSent();
+    }
+
+    public function test_regulated_tenant_can_use_manual_scheduling(): void
+    {
+        $patient = $this->patient();
+        $patient->tenant->forceFill(['regulacao' => true])->save();
+        $date = now()->addDays(2)->toDateString();
+
+        $this->fakeSuccessfulScheduling($date);
+
+        $this->actingAs($patient)->postJson('/triagem/schedule', [
+            'specialty_id' => 6,
+            'date' => $date,
+            'time' => '09:30',
+            'doctor_id' => 42,
+            'is_real_doctor' => true,
+            'request_id' => (string) Str::uuid(),
+        ])->assertCreated()
+            ->assertJsonPath('codigo', 'CN-9001');
+
+        $this->assertDatabaseHas('consultation_appointments', [
+            'tenant_id' => $patient->tenant_id,
+            'user_id' => $patient->id,
+            'sync_status' => AppointmentSyncStatus::Confirmed->value,
+        ]);
     }
 
     private function patient(): User

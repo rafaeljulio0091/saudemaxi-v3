@@ -1,0 +1,12 @@
+{
+  /* Campos Obrigatórios */
+  "patient_cpf": "12345678900",     /* OBRIGATÓRIO - CPF do paciente */
+  "specialty_id": 1,                /* OBRIGATÓRIO - ID da especialidade */
+  "date": "2025-12-05",             /* OBRIGATÓRIO - Data (YYYY-MM-DD) */
+  "time": "09:00",                  /* OBRIGATÓRIO - Horário (HH:MM) */
+
+  /* Campos Opcionais */
+  "doctor_id": 45,                  /* Opcional - ID do médico (se is_real_doctor=true) */
+  "is_real_doctor": true,           /* Opcional - Se true, atribui médico específico */
+  "is_paid": true                   /* Opcional - Se true, marca consulta como já paga */
+}
