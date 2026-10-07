@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Pharmacy;
+use App\Models\Prescription;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -83,6 +84,11 @@ class HealthcarePatientAreaTest extends TestCase
     {
         $patient = $this->makePatient();
         $nearby = $this->pharmacyWithAddress($patient->tenant, 'Farmácia Próxima', -23.0264, -45.5553);
+        $nearby->addresses()->firstOrFail()->forceFill([
+            'geocoding_provider' => 'nominatim',
+            'geocoding_attempted_at' => now(),
+            'geocoded_at' => now(),
+        ])->save();
         $this->pharmacyWithAddress($patient->tenant, 'Farmácia Distante', -23.1264, -45.6553);
         $otherTenant = Tenant::factory()->create();
         $this->pharmacyWithAddress($otherTenant, 'Farmácia de outro cliente', -23.0264, -45.5553);
@@ -95,6 +101,7 @@ class HealthcarePatientAreaTest extends TestCase
             ->assertJsonCount(2)
             ->assertJsonPath('0.id', $nearby->uuid)
             ->assertJsonPath('0.name', 'Farmácia Próxima')
+            ->assertJsonPath('0.coordinate_attribution.label', '© OpenStreetMap contributors')
             ->assertJsonMissing(['name' => 'Farmácia de outro cliente']);
 
         $this->assertLessThan(1, $response->json('0.distance_km'));
@@ -145,9 +152,13 @@ class HealthcarePatientAreaTest extends TestCase
         $patient = $this->makePatient();
         $this->actingAs($patient)->getJson('/triagem/prescriptions')->assertOk()->assertExactJson([]);
 
-        $file = UploadedFile::fake()->image('receita.jpg')->size(500);
+        $file = UploadedFile::fake()->image('receita.png')->size(500);
         $this->actingAs($patient)->postJson('/triagem/photo', ['file' => $file])
             ->assertOk()->assertJsonPath('status', 'AGUARDANDO_ANALISE')->assertJsonPath('itens', []);
+
+        $prescription = Prescription::firstOrFail();
+        Storage::disk('local')->assertExists($prescription->photo_path);
+        $this->assertSame($patient->id, $prescription->patient_id);
 
         $this->actingAs($patient)->getJson('/triagem/prescriptions')->assertOk()->assertJsonCount(1);
 
@@ -161,6 +172,24 @@ class HealthcarePatientAreaTest extends TestCase
         $patient = $this->makePatient();
         $file = UploadedFile::fake()->create('receita.pdf', 100, 'application/pdf');
         $this->actingAs($patient)->postJson('/triagem/photo', ['file' => $file])->assertUnprocessable();
+    }
+
+    public function test_photo_upload_checks_the_module_before_storing_the_file(): void
+    {
+        Storage::fake('local');
+        $patient = $this->makePatient();
+        $patient->tenant->plans()->create([
+            'name' => 'Sem farmácia',
+            'modules' => ['farmacia' => false],
+            'is_default' => true,
+        ]);
+        $file = UploadedFile::fake()->image('receita.png')->size(500);
+
+        $this->actingAs($patient)->postJson('/triagem/photo', ['file' => $file])
+            ->assertForbidden();
+
+        $this->assertSame([], Storage::disk('local')->allFiles());
+        $this->assertDatabaseCount('prescriptions', 0);
     }
 
     public function test_consultations_search_calls_the_real_provider_and_maps_its_fields(): void

@@ -65,6 +65,8 @@ class AiProvidersTest extends TestCase
                 && $request['text']['format']['strict'] === true
                 && $request['text']['format']['schema']['additionalProperties'] === false
                 && $request['input'][0]['content'] === $patientContent
+                && str_contains($request['instructions'], 'Um relato clínico curto ou genérico')
+                && str_contains($request['instructions'], 'mantenha conversation_complete como false')
                 && ! str_contains($request['instructions'], $patientContent)
                 && ! str_contains((string) $request->header('Authorization')[0], $patientContent);
         });
@@ -104,8 +106,20 @@ class AiProvidersTest extends TestCase
         $this->assertSame(0.91, $result->confidence);
         $this->assertSame(['standard' => 0.91, 'human_review' => 0.09], $result->probabilities);
 
-        Http::assertSent(fn (Request $request) => $request['questions']['triage_route']['type'] === 'choice'
-            && $request['questions']['priority']['type'] === 'score'
-            && $request['questions']['requires_human_review']['type'] === 'noul');
+        Http::assertSent(function (Request $request) {
+            $questions = $request['questions'];
+
+            return $questions['triage_route']['type'] === 'choice'
+                && $questions['priority']['type'] === 'score'
+                && $questions['requires_human_review']['type'] === 'noul'
+                && str_contains(
+                    $questions['triage_route']['criteria']['human_review'],
+                    'não pode ser reduzida por outra pergunta segura',
+                )
+                && str_contains(
+                    $questions['requires_human_review']['instructions'],
+                    'Não considere apenas campos ainda coletáveis',
+                );
+        });
     }
 }

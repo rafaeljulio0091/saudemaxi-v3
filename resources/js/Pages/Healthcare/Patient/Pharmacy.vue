@@ -20,11 +20,14 @@ const open = ref(false),
     busy = ref(false),
     error = ref(''),
     preview = ref(''),
+    fileInput = ref(null),
+    selectedFile = ref(null),
     uploaded = ref(null);
 function choose(event) {
     const file = event.target.files[0];
     if (preview.value) URL.revokeObjectURL(preview.value);
     preview.value = '';
+    selectedFile.value = null;
     error.value = '';
     if (!file) return;
     if (
@@ -34,14 +37,19 @@ function choose(event) {
         error.value = 'Escolha uma imagem JPG, PNG ou WebP de até 10 MB.';
         return;
     }
+    selectedFile.value = file;
     preview.value = URL.createObjectURL(file);
 }
 async function read() {
-    if (busy.value || !preview.value) return;
+    if (busy.value || !selectedFile.value) return;
     busy.value = true;
     error.value = '';
     try {
-        uploaded.value = await pharmacy.readDemoPhoto();
+        uploaded.value = await pharmacy.uploadPhoto(selectedFile.value);
+        if (preview.value) URL.revokeObjectURL(preview.value);
+        preview.value = '';
+        selectedFile.value = null;
+        if (fileInput.value) fileInput.value.value = '';
         open.value = false;
         await state.run();
     } catch (e) {
@@ -69,7 +77,7 @@ onBeforeUnmount(() => {
             cobertura.
         </AppAlert>
         <AppAlert v-if="uploaded" tone="success">
-            Leitura demonstrativa criada.
+            Receita enviada com segurança.
             <a :href="href('/receita/' + uploaded.id)" class="sm-link">
                 Conferir resultado
             </a>
@@ -120,9 +128,10 @@ onBeforeUnmount(() => {
                 Apoie o papel numa superfície plana, evite sombras e enquadre a
                 receita inteira.
             </p>
-            <label for="prescription-photo">Foto de exemplo, até 10 MB</label>
+            <label for="prescription-photo">Foto da receita, até 10 MB</label>
             <input
                 id="prescription-photo"
+                ref="fileInput"
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 @change="choose"
@@ -134,12 +143,12 @@ onBeforeUnmount(() => {
                 style="max-height: 220px; object-fit: contain; width: 100%"
             />
             <AppAlert>
-                A imagem fica somente na prévia desta página. A leitura a seguir
-                usa um exemplo fixo, sem enviar ou analisar sua foto.
+                A imagem será armazenada de forma privada na sua conta. O envio
+                não realiza leitura automática nem confirma cobertura.
             </AppAlert>
             <AppAlert v-if="error" tone="danger">{{ error }}</AppAlert>
-            <AppButton :busy="busy" :disabled="!preview" @click="read">
-                Demonstrar leitura da receita
+            <AppButton :busy="busy" :disabled="!selectedFile" @click="read">
+                Enviar receita
             </AppButton>
         </div>
     </AppModal>

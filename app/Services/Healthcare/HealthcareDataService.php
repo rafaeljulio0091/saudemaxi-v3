@@ -6,6 +6,10 @@ use App\Models\Prescription;
 use App\Models\User;
 use App\Services\Telemedicine\LsxMedicalConsultationClient;
 use App\Services\Telemedicine\TelemedicineApiException;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use RuntimeException;
+use Throwable;
 
 class HealthcareDataService
 {
@@ -196,12 +200,26 @@ class HealthcareDataService
 
     private function storePrescriptionPhoto(User $user, array $input): array
     {
-        $prescription = $user->prescriptions()->create([
-            'status' => 'AGUARDANDO_ANALISE',
-            'medico' => null,
-            'itens' => [],
-            'photo_path' => $input['photo_path'],
-        ]);
+        /** @var UploadedFile $file */
+        $file = $input['file'];
+        $photoPath = $file->store('prescriptions/'.$user->id, 'local');
+
+        if ($photoPath === false) {
+            throw new RuntimeException('Não foi possível armazenar a receita.');
+        }
+
+        try {
+            $prescription = $user->prescriptions()->create([
+                'status' => 'AGUARDANDO_ANALISE',
+                'medico' => null,
+                'itens' => [],
+                'photo_path' => $photoPath,
+            ]);
+        } catch (Throwable $exception) {
+            Storage::disk('local')->delete($photoPath);
+
+            throw $exception;
+        }
 
         return $this->presentPrescription($prescription);
     }

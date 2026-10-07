@@ -1,0 +1,752 @@
+{
+  "_AppAlert-n7giDmMd.js": {
+    "file": "assets/AppAlert-n7giDmMd.js",
+    "name": "AppAlert",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_AppButton-CtH7oJ0D.js": {
+    "file": "assets/AppButton-CtH7oJ0D.js",
+    "name": "AppButton",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_AppField-BVvvqUXX.js": {
+    "file": "assets/AppField-BVvvqUXX.js",
+    "name": "AppField",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_AppModal-BIuXe3ya.js": {
+    "file": "assets/AppModal-BIuXe3ya.js",
+    "name": "AppModal",
+    "imports": [
+      "resources/js/app.js",
+      "_AppButton-CtH7oJ0D.js"
+    ]
+  },
+  "_AppPagination-Cq8fKJfP.js": {
+    "file": "assets/AppPagination-Cq8fKJfP.js",
+    "name": "AppPagination",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_DashboardLayout-DNNOOi11.js": {
+    "file": "assets/DashboardLayout-DNNOOi11.js",
+    "name": "DashboardLayout",
+    "imports": [
+      "resources/js/app.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppModal-BIuXe3ya.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "_HealthcareGuestLayout-B8xD5Kr4.js": {
+    "file": "assets/HealthcareGuestLayout-B8xD5Kr4.js",
+    "name": "HealthcareGuestLayout",
+    "imports": [
+      "resources/js/app.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "_HealthcareLayout-DfI_WpuV.js": {
+    "file": "assets/HealthcareLayout-DfI_WpuV.js",
+    "name": "HealthcareLayout",
+    "imports": [
+      "resources/js/app.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppModal-BIuXe3ya.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "_PageHeader-BpO53eFU.js": {
+    "file": "assets/PageHeader-BpO53eFU.js",
+    "name": "PageHeader",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_ServiceCard-DBe6lvlq.js": {
+    "file": "assets/ServiceCard-DBe6lvlq.js",
+    "name": "ServiceCard",
+    "imports": [
+      "resources/js/app.js",
+      "_dashboardNavigation-NuGIEdTu.js"
+    ]
+  },
+  "_consultationStatus-v4bd-pyF.js": {
+    "file": "assets/consultationStatus-v4bd-pyF.js",
+    "name": "consultationStatus"
+  },
+  "_dashboardNavigation-NuGIEdTu.js": {
+    "file": "assets/dashboardNavigation-NuGIEdTu.js",
+    "name": "dashboardNavigation",
+    "imports": [
+      "resources/js/app.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppModal-BIuXe3ya.js",
+      "_AppAlert-n7giDmMd.js"
+    ]
+  },
+  "_useAsyncState-CxizSwP7.js": {
+    "file": "assets/useAsyncState-CxizSwP7.js",
+    "name": "useAsyncState",
+    "imports": [
+      "_AppButton-CtH7oJ0D.js",
+      "resources/js/app.js"
+    ]
+  },
+  "_useHealthcareServices-BnTrRImQ.js": {
+    "file": "assets/useHealthcareServices-BnTrRImQ.js",
+    "name": "useHealthcareServices",
+    "imports": [
+      "_dashboardNavigation-NuGIEdTu.js"
+    ]
+  },
+  "_utilities-_N_MrULp.css": {
+    "file": "assets/utilities-_N_MrULp.css",
+    "src": "_utilities-_N_MrULp.css"
+  },
+  "resources/js/Pages/Auth/ConfirmPassword.vue": {
+    "file": "assets/ConfirmPassword-DQmUmcrD.js",
+    "name": "ConfirmPassword",
+    "src": "resources/js/Pages/Auth/ConfirmPassword.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_HealthcareGuestLayout-B8xD5Kr4.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppField-BVvvqUXX.js",
+      "_AppAlert-n7giDmMd.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Auth/ForgotPassword.vue": {
+    "file": "assets/ForgotPassword-C-qPbX7q.js",
+    "name": "ForgotPassword",
+    "src": "resources/js/Pages/Auth/ForgotPassword.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_HealthcareGuestLayout-B8xD5Kr4.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppField-BVvvqUXX.js",
+      "_AppAlert-n7giDmMd.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Auth/Login.vue": {
+    "file": "assets/Login-CoSCzv_U.js",
+    "name": "Login",
+    "src": "resources/js/Pages/Auth/Login.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_HealthcareGuestLayout-B8xD5Kr4.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppField-BVvvqUXX.js",
+      "_AppAlert-n7giDmMd.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Auth/Register.vue": {
+    "file": "assets/Register-CBoBu7Jg.js",
+    "name": "Register",
+    "src": "resources/js/Pages/Auth/Register.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_HealthcareGuestLayout-B8xD5Kr4.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppField-BVvvqUXX.js",
+      "_AppAlert-n7giDmMd.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Auth/ResetPassword.vue": {
+    "file": "assets/ResetPassword-CxQDS1A0.js",
+    "name": "ResetPassword",
+    "src": "resources/js/Pages/Auth/ResetPassword.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_HealthcareGuestLayout-B8xD5Kr4.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppField-BVvvqUXX.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Auth/VerifyEmail.vue": {
+    "file": "assets/VerifyEmail-JwGUefxL.js",
+    "name": "VerifyEmail",
+    "src": "resources/js/Pages/Auth/VerifyEmail.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_HealthcareGuestLayout-B8xD5Kr4.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppAlert-n7giDmMd.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Dashboard/Manager.vue": {
+    "file": "assets/Manager-BGLUW1bA.js",
+    "name": "Manager",
+    "src": "resources/js/Pages/Dashboard/Manager.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_DashboardLayout-DNNOOi11.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_ServiceCard-DBe6lvlq.js",
+      "resources/js/app.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppModal-BIuXe3ya.js",
+      "_AppAlert-n7giDmMd.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Dashboard/Patient.vue": {
+    "file": "assets/Patient-BasH62xH.js",
+    "name": "Patient",
+    "src": "resources/js/Pages/Dashboard/Patient.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_DashboardLayout-DNNOOi11.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_ServiceCard-DBe6lvlq.js",
+      "resources/js/app.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppModal-BIuXe3ya.js",
+      "_AppAlert-n7giDmMd.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Demo.vue": {
+    "file": "assets/Demo-B_N8nEn2.js",
+    "name": "Demo",
+    "src": "resources/js/Pages/Healthcare/Demo.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_HealthcareGuestLayout-B8xD5Kr4.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppAlert-n7giDmMd.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Manager/Branding.vue": {
+    "file": "assets/Branding-ul-g-srq.js",
+    "name": "Branding",
+    "src": "resources/js/Pages/Healthcare/Manager/Branding.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppAlert-n7giDmMd.js",
+      "_PageHeader-BpO53eFU.js",
+      "_AppField-BVvvqUXX.js",
+      "_useHealthcareServices-BnTrRImQ.js",
+      "_AppModal-BIuXe3ya.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Manager/Dashboard.vue": {
+    "file": "assets/Dashboard-XMl6iY_j.js",
+    "name": "Dashboard",
+    "src": "resources/js/Pages/Healthcare/Manager/Dashboard.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_useAsyncState-CxizSwP7.js",
+      "_useHealthcareServices-BnTrRImQ.js",
+      "resources/js/app.js",
+      "_AppModal-BIuXe3ya.js",
+      "_AppAlert-n7giDmMd.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Manager/Integrations.vue": {
+    "file": "assets/Integrations-BLoTSNoI.js",
+    "name": "Integrations",
+    "src": "resources/js/Pages/Healthcare/Manager/Integrations.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "resources/js/app.js",
+      "_AppAlert-n7giDmMd.js",
+      "_PageHeader-BpO53eFU.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppModal-BIuXe3ya.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Manager/Patient.vue": {
+    "file": "assets/Patient-D7t4HuQl.js",
+    "name": "Patient",
+    "src": "resources/js/Pages/Healthcare/Manager/Patient.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppAlert-n7giDmMd.js",
+      "_PageHeader-BpO53eFU.js",
+      "_useAsyncState-CxizSwP7.js",
+      "_AppField-BVvvqUXX.js",
+      "_useHealthcareServices-BnTrRImQ.js",
+      "_AppModal-BIuXe3ya.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Manager/Patients.vue": {
+    "file": "assets/Patients-BAfxw_pf.js",
+    "name": "Patients",
+    "src": "resources/js/Pages/Healthcare/Manager/Patients.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppPagination-Cq8fKJfP.js",
+      "_AppModal-BIuXe3ya.js",
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppAlert-n7giDmMd.js",
+      "_PageHeader-BpO53eFU.js",
+      "_useAsyncState-CxizSwP7.js",
+      "_AppField-BVvvqUXX.js",
+      "_useHealthcareServices-BnTrRImQ.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Manager/Plans.vue": {
+    "file": "assets/Plans--5fr8-zH.js",
+    "name": "Plans",
+    "src": "resources/js/Pages/Healthcare/Manager/Plans.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_AppAlert-n7giDmMd.js",
+      "_PageHeader-BpO53eFU.js",
+      "_useAsyncState-CxizSwP7.js",
+      "_useHealthcareServices-BnTrRImQ.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppModal-BIuXe3ya.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/NotReady.vue": {
+    "file": "assets/NotReady-8RdUWY06.js",
+    "name": "NotReady",
+    "src": "resources/js/Pages/Healthcare/NotReady.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_HealthcareGuestLayout-B8xD5Kr4.js",
+      "_AppButton-CtH7oJ0D.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Patient/Account.vue": {
+    "file": "assets/Account-Czg0Oa4X.js",
+    "name": "Account",
+    "src": "resources/js/Pages/Healthcare/Patient/Account.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppField-BVvvqUXX.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppAlert-n7giDmMd.js",
+      "_PageHeader-BpO53eFU.js",
+      "_useAsyncState-CxizSwP7.js",
+      "_useHealthcareServices-BnTrRImQ.js",
+      "_AppModal-BIuXe3ya.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Patient/Guidance.vue": {
+    "file": "assets/Guidance-JowbhJEI.js",
+    "name": "Guidance",
+    "src": "resources/js/Pages/Healthcare/Patient/Guidance.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_dashboardNavigation-NuGIEdTu.js",
+      "resources/js/app.js",
+      "_useHealthcareServices-BnTrRImQ.js",
+      "_AppAlert-n7giDmMd.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_PageHeader-BpO53eFU.js",
+      "_AppModal-BIuXe3ya.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Patient/Help.vue": {
+    "file": "assets/Help-Cvv8RSB5.js",
+    "name": "Help",
+    "src": "resources/js/Pages/Healthcare/Patient/Help.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppAlert-n7giDmMd.js",
+      "_PageHeader-BpO53eFU.js",
+      "resources/js/app.js",
+      "_AppModal-BIuXe3ya.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Patient/Home.vue": {
+    "file": "assets/Home-DIyx8lMX.js",
+    "name": "Home",
+    "src": "resources/js/Pages/Healthcare/Patient/Home.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_ServiceCard-DBe6lvlq.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_consultationStatus-v4bd-pyF.js",
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_useAsyncState-CxizSwP7.js",
+      "_useHealthcareServices-BnTrRImQ.js",
+      "resources/js/app.js",
+      "_AppModal-BIuXe3ya.js",
+      "_AppAlert-n7giDmMd.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Patient/Immediate.vue": {
+    "file": "assets/Immediate-CYasnGIw.js",
+    "name": "Immediate",
+    "src": "resources/js/Pages/Healthcare/Patient/Immediate.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppAlert-n7giDmMd.js",
+      "_PageHeader-BpO53eFU.js",
+      "_useHealthcareServices-BnTrRImQ.js",
+      "resources/js/app.js",
+      "_AppModal-BIuXe3ya.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Patient/MentalHealth.vue": {
+    "file": "assets/MentalHealth-D5tvyoaL.js",
+    "name": "MentalHealth",
+    "src": "resources/js/Pages/Healthcare/Patient/MentalHealth.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppAlert-n7giDmMd.js",
+      "_PageHeader-BpO53eFU.js",
+      "resources/js/app.js",
+      "_AppModal-BIuXe3ya.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Patient/Pharmacies.vue": {
+    "file": "assets/Pharmacies-DHN0xc2g.js",
+    "name": "Pharmacies",
+    "src": "resources/js/Pages/Healthcare/Patient/Pharmacies.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppAlert-n7giDmMd.js",
+      "_PageHeader-BpO53eFU.js",
+      "_useAsyncState-CxizSwP7.js",
+      "_useHealthcareServices-BnTrRImQ.js",
+      "resources/js/app.js",
+      "_AppModal-BIuXe3ya.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Patient/Pharmacy.vue": {
+    "file": "assets/Pharmacy-CfXukmHn.js",
+    "name": "Pharmacy",
+    "src": "resources/js/Pages/Healthcare/Patient/Pharmacy.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_AppModal-BIuXe3ya.js",
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppAlert-n7giDmMd.js",
+      "_PageHeader-BpO53eFU.js",
+      "_useAsyncState-CxizSwP7.js",
+      "_useHealthcareServices-BnTrRImQ.js",
+      "resources/js/app.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Patient/Prescription.vue": {
+    "file": "assets/Prescription-D0rg7O5i.js",
+    "name": "Prescription",
+    "src": "resources/js/Pages/Healthcare/Patient/Prescription.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppModal-BIuXe3ya.js",
+      "_AppField-BVvvqUXX.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppAlert-n7giDmMd.js",
+      "_PageHeader-BpO53eFU.js",
+      "_useAsyncState-CxizSwP7.js",
+      "_useHealthcareServices-BnTrRImQ.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Patient/Scheduling.vue": {
+    "file": "assets/Scheduling-GGbU4_B6.js",
+    "name": "Scheduling",
+    "src": "resources/js/Pages/Healthcare/Patient/Scheduling.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppAlert-n7giDmMd.js",
+      "_PageHeader-BpO53eFU.js",
+      "_useAsyncState-CxizSwP7.js",
+      "_useHealthcareServices-BnTrRImQ.js",
+      "_AppModal-BIuXe3ya.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Shared/Consultations.vue": {
+    "file": "assets/Consultations-AEZx7XqA.js",
+    "name": "Consultations",
+    "src": "resources/js/Pages/Healthcare/Shared/Consultations.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppPagination-Cq8fKJfP.js",
+      "_consultationStatus-v4bd-pyF.js",
+      "_AppModal-BIuXe3ya.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppAlert-n7giDmMd.js",
+      "_PageHeader-BpO53eFU.js",
+      "_useAsyncState-CxizSwP7.js",
+      "_AppField-BVvvqUXX.js",
+      "_useHealthcareServices-BnTrRImQ.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Healthcare/Unavailable.vue": {
+    "file": "assets/Unavailable-NBYRqMTO.js",
+    "name": "Unavailable",
+    "src": "resources/js/Pages/Healthcare/Unavailable.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_HealthcareLayout-DfI_WpuV.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "_AppButton-CtH7oJ0D.js",
+      "resources/js/app.js",
+      "_AppModal-BIuXe3ya.js",
+      "_AppAlert-n7giDmMd.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Profile/Edit.vue": {
+    "file": "assets/Edit-DKu2h_kU.js",
+    "name": "Edit",
+    "src": "resources/js/Pages/Profile/Edit.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_DashboardLayout-DNNOOi11.js",
+      "_dashboardNavigation-NuGIEdTu.js",
+      "resources/js/Pages/Profile/Partials/DeleteUserForm.vue",
+      "resources/js/Pages/Profile/Partials/UpdatePasswordForm.vue",
+      "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.vue",
+      "resources/js/app.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppModal-BIuXe3ya.js",
+      "_AppAlert-n7giDmMd.js",
+      "_AppField-BVvvqUXX.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/Pages/Profile/Partials/DeleteUserForm.vue": {
+    "file": "assets/DeleteUserForm-CFNLOsid.js",
+    "name": "DeleteUserForm",
+    "src": "resources/js/Pages/Profile/Partials/DeleteUserForm.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppModal-BIuXe3ya.js",
+      "_AppField-BVvvqUXX.js"
+    ]
+  },
+  "resources/js/Pages/Profile/Partials/UpdatePasswordForm.vue": {
+    "file": "assets/UpdatePasswordForm-XbjS5XT3.js",
+    "name": "UpdatePasswordForm",
+    "src": "resources/js/Pages/Profile/Partials/UpdatePasswordForm.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppField-BVvvqUXX.js",
+      "_AppButton-CtH7oJ0D.js"
+    ]
+  },
+  "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.vue": {
+    "file": "assets/UpdateProfileInformationForm-Ca2kNPHw.js",
+    "name": "UpdateProfileInformationForm",
+    "src": "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppField-BVvvqUXX.js",
+      "_AppButton-CtH7oJ0D.js",
+      "_AppAlert-n7giDmMd.js"
+    ]
+  },
+  "resources/js/Pages/Welcome.vue": {
+    "file": "assets/Welcome-q6mxnb0N.js",
+    "name": "Welcome",
+    "src": "resources/js/Pages/Welcome.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_HealthcareGuestLayout-B8xD5Kr4.js",
+      "_AppButton-CtH7oJ0D.js"
+    ],
+    "css": [
+      "assets/utilities-_N_MrULp.css"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-D4elj2cb.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "dynamicImports": [
+      "resources/js/Pages/Auth/ConfirmPassword.vue",
+      "resources/js/Pages/Auth/ForgotPassword.vue",
+      "resources/js/Pages/Auth/Login.vue",
+      "resources/js/Pages/Auth/Register.vue",
+      "resources/js/Pages/Auth/ResetPassword.vue",
+      "resources/js/Pages/Auth/VerifyEmail.vue",
+      "resources/js/Pages/Dashboard/Manager.vue",
+      "resources/js/Pages/Dashboard/Patient.vue",
+      "resources/js/Pages/Healthcare/Demo.vue",
+      "resources/js/Pages/Healthcare/Manager/Branding.vue",
+      "resources/js/Pages/Healthcare/Manager/Dashboard.vue",
+      "resources/js/Pages/Healthcare/Manager/Integrations.vue",
+      "resources/js/Pages/Healthcare/Manager/Patient.vue",
+      "resources/js/Pages/Healthcare/Manager/Patients.vue",
+      "resources/js/Pages/Healthcare/Manager/Plans.vue",
+      "resources/js/Pages/Healthcare/NotReady.vue",
+      "resources/js/Pages/Healthcare/Patient/Account.vue",
+      "resources/js/Pages/Healthcare/Patient/Guidance.vue",
+      "resources/js/Pages/Healthcare/Patient/Help.vue",
+      "resources/js/Pages/Healthcare/Patient/Home.vue",
+      "resources/js/Pages/Healthcare/Patient/Immediate.vue",
+      "resources/js/Pages/Healthcare/Patient/MentalHealth.vue",
+      "resources/js/Pages/Healthcare/Patient/Pharmacies.vue",
+      "resources/js/Pages/Healthcare/Patient/Pharmacy.vue",
+      "resources/js/Pages/Healthcare/Patient/Prescription.vue",
+      "resources/js/Pages/Healthcare/Patient/Scheduling.vue",
+      "resources/js/Pages/Healthcare/Shared/Consultations.vue",
+      "resources/js/Pages/Healthcare/Unavailable.vue",
+      "resources/js/Pages/Profile/Edit.vue",
+      "resources/js/Pages/Profile/Partials/DeleteUserForm.vue",
+      "resources/js/Pages/Profile/Partials/UpdatePasswordForm.vue",
+      "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.vue",
+      "resources/js/Pages/Welcome.vue"
+    ],
+    "css": [
+      "assets/app-DdfRktUV.css"
+    ]
+  }
+}

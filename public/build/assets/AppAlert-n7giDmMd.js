@@ -1,0 +1,1 @@
+import{o,j as s,H as a,B as r}from"./app-D4elj2cb.js";const n=["role"],i={__name:"AppAlert",props:{tone:{type:String,default:"info"}},setup(e){return(t,l)=>(o(),s("div",{class:r(["sm-alert",e.tone]),role:e.tone==="danger"?"alert":"status"},[a(t.$slots,"default")],10,n))}};export{i as _};

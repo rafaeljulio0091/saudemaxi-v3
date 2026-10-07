@@ -5,6 +5,7 @@ import { useMaxStore } from '../../resources/js/stores/max.js';
 import { useTriageStore } from '../../resources/js/stores/triage.js';
 import { brandTokens } from '../../resources/js/utils/brandColor.js';
 import { consultationStatuses } from '../../resources/js/constants/consultationStatus.js';
+import { pharmacyService } from '../../resources/js/services/pharmacy.service.js';
 
 test('MAX discards a response after the tenant or profile changes', async () => {
     setActivePinia(createPinia());
@@ -112,4 +113,28 @@ test('consultation presentation preserves all eight provider statuses', () => {
         'FINISHED',
         'CANCELED',
     ]);
+});
+
+test('prescription upload sends the selected file as multipart data', async () => {
+    const file = new File(['imagem'], 'receita.png', { type: 'image/png' });
+    let path;
+    let payload;
+    const pharmacy = pharmacyService({
+        post: async (requestedPath, data) => {
+            path = requestedPath;
+            payload = data;
+
+            return { id: 1 };
+        },
+    });
+
+    await pharmacy.uploadPhoto(file);
+
+    assert.equal(path, 'photo');
+    assert.ok(payload instanceof FormData);
+    const uploaded = payload.get('file');
+    assert.equal(uploaded.name, file.name);
+    assert.equal(uploaded.type, file.type);
+    assert.equal(uploaded.size, file.size);
+    assert.equal(await uploaded.text(), await file.text());
 });

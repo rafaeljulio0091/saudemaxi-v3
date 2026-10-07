@@ -23,6 +23,11 @@ const state = useAsyncState((signal, location) =>
 const hasCalculatedDistance = computed(() =>
     (state.data.value || []).some((place) => place.distance_km !== null),
 );
+const coordinateAttribution = computed(
+    () =>
+        (state.data.value || []).find((place) => place.coordinate_attribution)
+            ?.coordinate_attribution || null,
+);
 
 function rounded(value) {
     return Number(value.toFixed(4));
@@ -85,8 +90,8 @@ function distanceLabel(place) {
     if (place.distancia) return place.distancia;
     if (place.distance_km === null) return 'Distância indisponível';
     if (place.distance_km < 1)
-        return `${Math.round(place.distance_km * 1000)} m`;
-    return `${place.distance_km.toLocaleString('pt-BR')} km`;
+        return `${Math.round(place.distance_km * 1000)} m em linha reta`;
+    return `${place.distance_km.toLocaleString('pt-BR')} km em linha reta`;
 }
 
 onMounted(requestLocation);
@@ -138,6 +143,18 @@ onMounted(requestLocation);
                 As farmácias oficiais foram encontradas, mas a planilha de
                 origem não fornece coordenadas. Os endereços são exibidos sem
                 uma distância estimada.
+            </AppAlert>
+            <AppAlert v-if="coordinateAttribution">
+                Coordenadas das farmácias por
+                <a
+                    :href="coordinateAttribution.url"
+                    class="sm-link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    {{ coordinateAttribution.label }}
+                </a>
+                . As distâncias são estimativas em linha reta.
             </AppAlert>
             <div class="sm-grid">
                 <AppCard v-for="place in state.data.value" :key="place.id">

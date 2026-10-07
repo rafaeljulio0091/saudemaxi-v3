@@ -147,6 +147,21 @@ Quando uma farmácia possuir coordenadas confiáveis no cadastro, os resultados
 são ordenados por distância. Sem coordenadas, a interface informa a limitação e
 exibe os endereços oficiais do tenant sem estimativa.
 
+Endereços públicos de farmácias podem ser geocodificados antecipadamente pelo
+backend, sem compartilhar a localização do paciente com o provedor:
+
+```bash
+php artisan healthcare:geocode-pharmacies <tenant-slug>
+```
+
+O comando é tenant-scoped, sequencial, ignora coordenadas e tentativas já
+registradas e persiste a proveniência para atribuição na interface. A
+integração fica desabilitada até que `GEOCODING_ENABLED`, identificação e
+contato operacional sejam configurados. Ao usar o endpoint público do
+Nominatim, a implantação deve respeitar o limite configurado, os termos do
+serviço e a atribuição do OpenStreetMap. O cálculo Haversine continua local e
+representa distância estimada em linha reta, não rota ou tempo de viagem.
+
 A planilha oficial de Guarujá em
 `docs/25432b7a-f5d8-441e-bf08-9d14e2a6dc76.xlsx` usa o mesmo leitor e
 importador, com município IBGE `3518701`:

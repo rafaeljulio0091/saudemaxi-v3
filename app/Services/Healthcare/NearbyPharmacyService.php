@@ -124,10 +124,21 @@ class NearbyPharmacyService
             'city' => $address?->city,
             'state' => $address?->state,
             'distance_km' => $distance,
+            'coordinate_attribution' => $this->coordinateAttribution($address),
             'source' => $pharmacy->data_source === 'gov_pfpb'
                 ? 'Programa Farmácia Popular'
                 : null,
         ];
+    }
+
+    /** @return array{label: string, url: string}|null */
+    private function coordinateAttribution(?Address $address): ?array
+    {
+        if ($address?->geocoding_provider !== 'nominatim' || $address->geocoded_at === null) {
+            return null;
+        }
+
+        return config('geocoding.attribution');
     }
 
     private function distance(float $fromLat, float $fromLon, float $toLat, float $toLon): float

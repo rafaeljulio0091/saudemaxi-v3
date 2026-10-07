@@ -22,13 +22,9 @@ class HealthcareDataController extends Controller
         $input = $request->all();
 
         if ($operation === 'photo') {
-            $request->validate([
-                'file' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            $input = $request->validate([
+                'file' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             ]);
-            $input['photo_path'] = $request->file('file')->store(
-                'prescriptions/'.$request->user()->id,
-                'local',
-            );
         }
 
         if ($operation === 'consultations-search') {

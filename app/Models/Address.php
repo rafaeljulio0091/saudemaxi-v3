@@ -42,6 +42,8 @@ class Address extends Model
             'district' => 'encrypted',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
+            'geocoding_attempted_at' => 'immutable_datetime',
+            'geocoded_at' => 'immutable_datetime',
         ];
     }
 

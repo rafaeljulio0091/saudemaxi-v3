@@ -5,6 +5,11 @@ export const pharmacyService = (client) => ({
     pharmacies: (signal) => client.get('pharmacies', signal),
     nearby: (location, signal) =>
         client.post('pharmacies-nearby', location, signal),
-    readDemoPhoto: () => client.post('photo', {}),
+    uploadPhoto: (file) => {
+        const form = new FormData();
+        form.append('file', file, file.name);
+
+        return client.post('photo', form);
+    },
     confirm: (data) => client.post('confirm-item', data),
 });

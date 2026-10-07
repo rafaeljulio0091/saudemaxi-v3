@@ -123,6 +123,90 @@ class TriageTest extends TestCase
             ->assertJsonPath('state.requires_human_review', true);
     }
 
+    public function test_incomplete_clinical_report_keeps_collecting_despite_jev_uncertainty(): void
+    {
+        [$patient] = $this->patient();
+        $this->bindConversationProvider($this->incompleteConversationResult());
+        $this->bindDecisionProvider(
+            confidence: 0.35,
+            classification: TriageClassification::HumanReview,
+            humanReviewProbability: 0.92,
+        );
+
+        $sessionId = $this->start($patient);
+
+        $this->postJson("/triagem/sessoes/{$sessionId}/mensagens", [
+            'message' => 'Dor de cabeça.',
+        ])->assertOk()
+            ->assertJsonPath('session.status', 'active')
+            ->assertJsonPath('message.text', 'Quando a dor começou e como ela evoluiu desde então?')
+            ->assertJsonPath('message.actions', [])
+            ->assertJsonPath('state.classification', 'standard')
+            ->assertJsonPath('state.requires_human_review', false)
+            ->assertJsonPath('state.closed', false);
+
+        $assessment = TriageAssessment::firstOrFail();
+        $this->assertFalse($assessment->requires_human_review);
+        $this->assertSame(
+            ['início ou duração', 'intensidade', 'evolução', 'sintomas associados'],
+            $assessment->structured_state['missing_information'],
+        );
+    }
+
+    public function test_incomplete_collection_still_escalates_a_possible_emergency(): void
+    {
+        [$patient] = $this->patient();
+        $this->bindConversationProvider($this->incompleteConversationResult());
+        $this->bindDecisionProvider(
+            classification: TriageClassification::Standard,
+            emergencyProbability: 0.80,
+        );
+
+        $sessionId = $this->start($patient);
+
+        $this->postJson("/triagem/sessoes/{$sessionId}/mensagens", [
+            'message' => 'Estou com um sintoma que começou agora.',
+        ])->assertOk()
+            ->assertJsonPath('session.status', 'emergency')
+            ->assertJsonPath('state.classification', 'emergency')
+            ->assertJsonPath('state.requires_human_review', true)
+            ->assertJsonPath('message.actions.0.path', 'tel:192');
+    }
+
+    public function test_incomplete_collection_still_escalates_a_priority_route(): void
+    {
+        [$patient] = $this->patient();
+        $this->bindConversationProvider($this->incompleteConversationResult());
+        $this->bindDecisionProvider(classification: TriageClassification::Priority);
+
+        $sessionId = $this->start($patient);
+
+        $this->postJson("/triagem/sessoes/{$sessionId}/mensagens", [
+            'message' => 'Preciso detalhar melhor o que estou sentindo.',
+        ])->assertOk()
+            ->assertJsonPath('session.status', 'human_review')
+            ->assertJsonPath('state.classification', 'priority')
+            ->assertJsonPath('state.requires_human_review', true)
+            ->assertJsonPath('message.actions.0.path', '/atendimento');
+    }
+
+    public function test_conversation_limitation_still_routes_to_human_review_during_collection(): void
+    {
+        [$patient] = $this->patient();
+        $this->bindConversationProvider($this->incompleteConversationResult(requiresHumanReview: true));
+        $this->bindDecisionProvider();
+
+        $sessionId = $this->start($patient);
+
+        $this->postJson("/triagem/sessoes/{$sessionId}/mensagens", [
+            'message' => 'Quero falar com um profissional agora.',
+        ])->assertOk()
+            ->assertJsonPath('session.status', 'human_review')
+            ->assertJsonPath('state.classification', 'human_review')
+            ->assertJsonPath('state.requires_human_review', true)
+            ->assertJsonPath('message.actions.0.path', '/atendimento');
+    }
+
     public function test_jev_failure_keeps_service_available_and_uses_human_review(): void
     {
         [$patient] = $this->patient();
@@ -314,32 +398,45 @@ class TriageTest extends TestCase
         $this->bindDecisionProvider($confidence);
     }
 
-    private function bindConversationProvider(): void
+    private function bindConversationProvider(?ConversationResult $result = null): void
     {
-        $this->app->instance(ConversationalAIProvider::class, new class implements ConversationalAIProvider
+        $result ??= self::conversationResult();
+
+        $this->app->instance(ConversationalAIProvider::class, new class($result) implements ConversationalAIProvider
         {
+            public function __construct(private ConversationResult $result) {}
+
             public function respond(ConversationInput $input): ConversationResult
             {
-                return TriageTest::conversationResult();
+                return $this->result;
             }
         });
     }
 
-    private function bindDecisionProvider(float $confidence = 0.98): void
-    {
-        $this->app->instance(DecisionAIProvider::class, new class($confidence) implements DecisionAIProvider
+    private function bindDecisionProvider(
+        float $confidence = 0.98,
+        TriageClassification $classification = TriageClassification::Standard,
+        float $humanReviewProbability = 0,
+        float $emergencyProbability = 0,
+    ): void {
+        $this->app->instance(DecisionAIProvider::class, new class($confidence, $classification, $humanReviewProbability, $emergencyProbability) implements DecisionAIProvider
         {
-            public function __construct(private float $confidence) {}
+            public function __construct(
+                private float $confidence,
+                private TriageClassification $classification,
+                private float $humanReviewProbability,
+                private float $emergencyProbability,
+            ) {}
 
             public function classify(DecisionInput $input): DecisionResult
             {
                 return new DecisionResult(
-                    classification: TriageClassification::Standard,
+                    classification: $this->classification,
                     confidence: $this->confidence,
-                    probabilities: ['standard' => $this->confidence],
+                    probabilities: [$this->classification->value => $this->confidence],
                     priorityScore: 0,
-                    humanReviewProbability: 0,
-                    emergencyProbability: 0,
+                    humanReviewProbability: $this->humanReviewProbability,
+                    emergencyProbability: $this->emergencyProbability,
                     model: 'jev-test',
                     durationMs: 5,
                     inputTokens: 10,
@@ -369,6 +466,34 @@ class TriageTest extends TestCase
                 'summary' => 'Queixa de teste.',
                 'missing_information' => [],
                 'conversation_complete' => true,
+            ],
+            model: 'openai-test',
+            durationMs: 10,
+            inputTokens: 20,
+            outputTokens: 10,
+        );
+    }
+
+    private function incompleteConversationResult(bool $requiresHumanReview = false): ConversationResult
+    {
+        return new ConversationResult(
+            message: 'Quando a dor começou e como ela evoluiu desde então?',
+            summary: 'Paciente relata dor de cabeça.',
+            symptoms: ['dor de cabeça'],
+            missingInformation: ['início ou duração', 'intensidade', 'evolução', 'sintomas associados'],
+            conversationComplete: false,
+            requiresHumanReview: $requiresHumanReview,
+            state: [
+                'chief_complaint' => 'Dor de cabeça',
+                'symptoms' => ['dor de cabeça'],
+                'onset' => '',
+                'duration' => '',
+                'intensity' => '',
+                'evolution' => '',
+                'additional_information' => '',
+                'summary' => 'Paciente relata dor de cabeça.',
+                'missing_information' => ['início ou duração', 'intensidade', 'evolução', 'sintomas associados'],
+                'conversation_complete' => false,
             ],
             model: 'openai-test',
             durationMs: 10,

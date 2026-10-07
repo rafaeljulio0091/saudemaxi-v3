@@ -55,13 +55,13 @@ class JevProvider implements DecisionAIProvider
         return [
             'triage_route' => [
                 'type' => 'choice',
-                'instructions' => 'Classifique somente a rota de encaminhamento, sem concluir doenças ou substituir avaliação profissional.',
+                'instructions' => 'Classifique somente a rota de encaminhamento com base no estado atual da conversa, sem concluir doenças ou substituir avaliação profissional. Considere conversation_complete e missing_information antes de exigir revisão humana.',
                 'criteria' => [
                     'emergency' => 'Há contexto que pode exigir serviço de emergência imediato.',
                     'priority' => 'Há necessidade de avaliação profissional prioritária, sem indicação inequívoca de emergência.',
                     'standard' => 'Há informações suficientes para atendimento convencional.',
                     'administrative' => 'A necessidade é administrativa e não clínica.',
-                    'human_review' => 'As informações são insuficientes, conflitantes ou incertas para outra rota.',
+                    'human_review' => 'Há conflito, incerteza ou limitação que exige avaliação humana agora e que não pode ser reduzida por outra pergunta segura. A falta de informação ainda coletável não basta para esta rota.',
                 ],
             ],
             'priority' => [
@@ -76,7 +76,7 @@ class JevProvider implements DecisionAIProvider
             ],
             'requires_human_review' => [
                 'type' => 'noul',
-                'instructions' => 'As informações exigem avaliação humana por dúvida, inconsistência ou limitação da automação.',
+                'instructions' => 'As informações exigem avaliação humana agora por dúvida, inconsistência ou limitação que não pode ser reduzida por outra pergunta segura. Não considere apenas campos ainda coletáveis.',
             ],
             'possible_emergency' => [
                 'type' => 'noul',
