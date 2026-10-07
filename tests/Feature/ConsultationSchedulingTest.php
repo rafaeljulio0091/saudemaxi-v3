@@ -107,6 +107,40 @@ class ConsultationSchedulingTest extends TestCase
         Http::assertSentCount(2);
     }
 
+    public function test_creation_omits_doctor_id_when_provider_does_not_return_a_real_doctor(): void
+    {
+        $patient = $this->patient();
+        $date = now()->addDays(2)->toDateString();
+
+        $this->fakeSuccessfulScheduling($date, realDoctor: false);
+
+        $this->actingAs($patient)->postJson('/triagem/schedule', [
+            'specialty_id' => 6,
+            'date' => $date,
+            'time' => '09:30',
+            'doctor_id' => 0,
+            'is_real_doctor' => false,
+            'request_id' => (string) Str::uuid(),
+        ])->assertCreated()
+            ->assertJsonPath('medico', 'Próximo profissional disponível');
+
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+            && str_ends_with($request->url(), '/api/clinic/scheduling/create-consultation/')
+            && $request->data() === [
+                'patient_cpf' => self::CPF,
+                'specialty_id' => 6,
+                'date' => $date,
+                'time' => '09:30',
+                'is_real_doctor' => false,
+                'is_paid' => false,
+            ]);
+
+        $appointment = ConsultationAppointment::query()->sole();
+        $this->assertSame($patient->tenant_id, $appointment->tenant_id);
+        $this->assertSame(0, $appointment->doctor_id);
+        $this->assertFalse($appointment->is_real_doctor);
+    }
+
     public function test_creation_is_idempotent_and_does_not_repeat_the_provider_write(): void
     {
         $patient = $this->patient();
@@ -332,9 +366,12 @@ class ConsultationSchedulingTest extends TestCase
         ]);
     }
 
-    private function fakeSuccessfulScheduling(string $date, ?string $creationFailure = null): void
-    {
-        Http::fake(function (Request $request) use ($date, $creationFailure) {
+    private function fakeSuccessfulScheduling(
+        string $date,
+        ?string $creationFailure = null,
+        bool $realDoctor = true,
+    ): void {
+        Http::fake(function (Request $request) use ($date, $creationFailure, $realDoctor) {
             return match (true) {
                 str_ends_with($request->url(), '/api/clinic/scheduling/specialties/') => Http::response([
                     ['id' => 6, 'name' => 'Cardiologia', 'price' => 120],
@@ -350,11 +387,11 @@ class ConsultationSchedulingTest extends TestCase
                         'time' => '09:30',
                     ] => Http::response([
                         [
-                            'id' => 42,
-                            'name' => 'Dra. Ana',
+                            'id' => $realDoctor ? 42 : 0,
+                            'name' => $realDoctor ? 'Dra. Ana' : 'Próximo profissional disponível',
                             'specialty' => 'Cardiologia',
                             'price' => 120,
-                            'is_real' => true,
+                            'is_real' => $realDoctor,
                         ],
                     ]),
                 str_ends_with($request->url(), '/api/clinic/scheduling/create-consultation/') && $creationFailure === 'connection' => throw new ConnectionException('Timeout sem payload sensível'),

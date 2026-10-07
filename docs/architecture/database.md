@@ -23,6 +23,10 @@
   link do paciente não são persistidos nessa tabela. Os nomes de especialidade
   e profissional e o identificador interno do provedor usam cast
   criptografado.
+- A tela `/consultas` do paciente pesquisa somente registros locais confirmados,
+  com escopo simultâneo por `tenant_id` e `user_id`. Filtros textuais sobre os
+  nomes criptografados usam cursor dentro desse escopo; o histórico LSX do
+  gestor permanece separado.
 
 ## Invariantes
 

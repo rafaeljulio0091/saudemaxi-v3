@@ -39,6 +39,9 @@
 - A criação usa `request_id` único por paciente e tenant. Falha ambígua de
   conexão, indisponibilidade ou resposta inválida muda o registro para
   `reconciliation_required` e bloqueia reenvio automático.
+- Na criação, `doctor_id` é enviado somente quando `is_real_doctor` é verdadeiro,
+  conforme o contrato LSX. Opções sem profissional específico preservam o ID
+  local retornado na disponibilidade, mas não o enviam no payload de criação.
 - Falha ao concluir a persistência depois de uma resposta LSX válida também
   exige reconciliação e não dispara uma segunda criação remota.
 - O registro local não guarda CPF nem `patient_link`. Nomes de especialidade e

@@ -106,6 +106,9 @@ Route::prefix('triagem')->middleware(['auth', 'verified'])->group(function () {
         ->middleware([EnsureUserHasRole::class.':patient', 'throttle:5,1,scheduling-create:'])
         ->block(10, 5)
         ->name('healthcare.patient.schedule');
+    Route::post('appointments-search', [ConsultationController::class, 'localSearch'])
+        ->middleware([EnsureUserHasRole::class.':patient', 'throttle:60,1,appointment-search:'])
+        ->name('healthcare.patient.appointments.search');
 
     // Generic data endpoints for the real (non-demonstration) patient area:
     // /atendimento, /agendamento, /farmacia, /consultas and /nr1 all share

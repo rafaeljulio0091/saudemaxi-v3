@@ -118,16 +118,22 @@ class ConsultationSchedulingService
             ]);
         }
 
+        $providerPayload = [
+            'patient_cpf' => $cpf,
+            'specialty_id' => $specialty['id'],
+            'date' => $input['date'],
+            'time' => $input['time'],
+        ];
+
+        if ($doctor['is_real']) {
+            $providerPayload['doctor_id'] = $doctor['id'];
+        }
+
+        $providerPayload['is_real_doctor'] = $doctor['is_real'];
+        $providerPayload['is_paid'] = false;
+
         try {
-            $result = $this->scheduling->createConsultation([
-                'patient_cpf' => $cpf,
-                'specialty_id' => $specialty['id'],
-                'date' => $input['date'],
-                'time' => $input['time'],
-                'doctor_id' => $doctor['id'],
-                'is_real_doctor' => $doctor['is_real'],
-                'is_paid' => false,
-            ]);
+            $result = $this->scheduling->createConsultation($providerPayload);
         } catch (TelemedicineApiException $exception) {
             $appointment->sync_status = in_array(
                 $exception->reason,

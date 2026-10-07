@@ -97,7 +97,7 @@ class LsxMedicalSchedulingClient
     }
 
     /**
-     * @param  array{patient_cpf: string, specialty_id: int, date: string, time: string, doctor_id: int, is_real_doctor: bool, is_paid: bool}  $payload
+     * @param  array{patient_cpf: string, specialty_id: int, date: string, time: string, doctor_id?: int, is_real_doctor: bool, is_paid: bool}  $payload
      * @return array{consultation_code: string, consultation_id: string, scheduled_for: string, is_paid: bool, price: ?float}
      */
     public function createConsultation(array $payload): array

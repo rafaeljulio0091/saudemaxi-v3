@@ -21,8 +21,17 @@ http.interceptors.response.use(
             500: 'Não foi possível concluir agora.',
             503: 'O serviço está indisponível. Tente novamente.',
         };
+        const status = error.response?.status;
+        const responseMessage = error.response?.data?.message;
+        const safeResponseMessage =
+            [403, 404, 409, 422, 429].includes(status) &&
+            typeof responseMessage === 'string' &&
+            responseMessage.trim()
+                ? responseMessage
+                : null;
         error.userMessage =
-            messages[error.response?.status] ||
+            safeResponseMessage ||
+            messages[status] ||
             (error.code === 'ECONNABORTED'
                 ? 'O serviço demorou a responder. Tente novamente.'
                 : 'Não foi possível conectar. Confira sua conexão.');

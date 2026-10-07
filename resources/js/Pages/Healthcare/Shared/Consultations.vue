@@ -28,20 +28,28 @@ const search = ref(''),
     selected = ref(null),
     busy = ref(false),
     error = ref('');
-const state = useAsyncState((signal) =>
-    appointment.search(
+const state = useAsyncState((signal) => {
+    const filters = {
+        search: search.value,
+        status: status.value,
+        page: page.value,
+        per_page: 10,
+    };
+
+    if (!context.value.demo && context.value.profile === 'patient') {
+        return appointment.localSearch(filters, signal);
+    }
+
+    return appointment.search(
         {
-            search: search.value,
-            status: status.value,
+            ...filters,
             doctor_cpf: doctorCpf.value,
             start_date_min: startDateMin.value,
             start_date_max: startDateMax.value,
-            page: page.value,
-            per_page: 10,
         },
         signal,
-    ),
-);
+    );
+});
 const rows = computed(() => state.data.value?.results || []);
 let debounce;
 watch([search, status, doctorCpf, startDateMin, startDateMax], () => {
@@ -158,7 +166,7 @@ onMounted(state.run);
                         <tbody>
                             <tr
                                 v-for="consultation in rows"
-                                :key="consultation.codigo"
+                                :key="consultation.id || consultation.codigo"
                             >
                                 <td>{{ consultation.codigo }}</td>
                                 <td>

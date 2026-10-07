@@ -1,6 +1,8 @@
 export const appointmentService = (client) => ({
     search: (filters, signal) =>
         client.post('consultations-search', filters, signal),
+    localSearch: (filters, signal) =>
+        client.post('appointments-search', filters, signal),
     history: (signal) => client.get('consultations', signal),
     specialties: (signal) => client.get('specialties', signal),
     days: (data, signal) => client.post('days', data, signal),
